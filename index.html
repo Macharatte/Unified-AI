@@ -261,8 +261,13 @@ header {
   line-height: 1.85;
 }
 
-.ai-content p { margin-bottom: 12px; }
+.ai-content p { margin-bottom: 14px; line-height: 1.9; }
 .ai-content p:last-child { margin-bottom: 0; }
+.ai-content br + br { display: block; margin-top: 8px; }
+.ai-content h1,.ai-content h2,.ai-content h3 { margin-top: 20px; margin-bottom: 8px; }
+.ai-content ul,.ai-content ol { margin-bottom: 14px; line-height: 1.9; }
+.ai-content li { margin-bottom: 6px; }
+.ai-content blockquote { margin: 14px 0; }
 .ai-content h1 { font-size: 18px; margin: 18px 0 8px; }
 .ai-content h2 { font-size: 16px; margin: 16px 0 6px; }
 .ai-content h3 { font-size: 14px; margin: 14px 0 4px; color: var(--fg2); }
@@ -655,7 +660,7 @@ body.sidebar-open #input-area { margin-left: 260px; transition: margin-left 0.25
 }
 .chat-item-title {
   font-size: 12px;
-  color: var(--fg);
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -664,7 +669,7 @@ body.sidebar-open #input-area { margin-left: 260px; transition: margin-left 0.25
 .chat-item-date {
   font-family: var(--mono);
   font-size: 9px;
-  color: var(--fg3);
+  color: #ffffff;
 }
 .chat-item-menu {
   background: none; border: none; cursor: pointer;
@@ -756,6 +761,38 @@ body.sidebar-open #input-area { margin-left: 260px; transition: margin-left 0.25
   z-index: 199;
 }
 body.sidebar-open #sidebar-overlay { display: block; }
+
+/* ── ユーザーメッセージ編集・コピーボタン ── */
+.user-msg-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  max-width: 72%;
+}
+.user-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.msg-user:hover .user-actions { opacity: 1; }
+.user-action-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 7px;
+  color: var(--fg);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.12s;
+  font-family: var(--mono);
+}
+.user-action-btn:hover { background: var(--surface); border-color: var(--fg3); }
+.user-action-btn svg { width: 11px; height: 11px; fill: currentColor; }
 </style>
 </head>
 <body>
@@ -1026,9 +1063,12 @@ async function deleteChat(id){
 
 // サイドバー開閉
 function toggleSidebar(){
-  document.body.classList.toggle('sidebar-open');
-  document.getElementById('sidebar').classList.toggle('open');
-  renderChatList();
+  const isOpen=document.getElementById('sidebar').classList.toggle('open');
+  document.body.classList.toggle('sidebar-open',isOpen);
+  if(isOpen){
+    // サイドバーを開くときだけ最新化
+    chatsLoad().then(function(){ renderChatList(); });
+  }
 }
 function closeSidebar(){
   document.body.classList.remove('sidebar-open');
@@ -1178,7 +1218,47 @@ async function callClaude(sys,messages){
 /* ═══ メイン送信 ═══ */
 async function ask(userText, files){
   const L=dLang(userText);
-  const sys='You are "Unified AI". Reply in '+L+' only. Be accurate and concise. Code: complete with comments. Math: show key steps. When files or images are provided, analyze them thoroughly.';
+  const sys='You are Unified AI, a highly knowledgeable and conversational AI assistant. '
+    +'Reply ONLY in '+L+'. '
+    +'\n\n'
+    +'MOST IMPORTANT RULE — ANSWER THE EXACT QUESTION ASKED:\n'
+    +'- Read the user message carefully. Answer precisely what they asked, nothing else.\n'
+    +'- If asked for a price, give the price. If asked for a recipe, give the recipe. Do not drift off-topic.\n'
+    +'- If the question is ambiguous, pick the most reasonable interpretation and answer it directly, then briefly note your interpretation at the end.\n'
+    +'- Never substitute a related topic for the actual question asked.\n'
+    +'\n'
+    +'PERSONALITY & STYLE:\n'
+    +'- Talk like a knowledgeable friend. Natural, warm, direct. No corporate-speak.\n'
+    +'- No preamble like "Great question!" or "Certainly!". Start with the answer immediately.\n'
+    +'- Every response feels fresh — no fixed templates or repetitive patterns.\n'
+    +'- Match tone to question: casual for casual, detailed for technical.\n'
+    +'\n'
+    +'ACCURACY:\n'
+    +'- Always give specific, concrete information. No vague answers.\n'
+    +'- Prices: give exact amounts with currency. If uncertain, say "as of my last update: X — verify at official site."\n'
+    +'- Products: include model numbers, specs, where to buy, price ranges.\n'
+    +'- Facts: use specific numbers, dates, proper nouns. Never approximate vaguely.\n'
+    +'- Frequently-changing info (prices, news, rankings): warn user to verify latest.\n'
+    +'\n'
+    +'FORMAT & DEPTH:\n'
+    +'- ALWAYS give thorough, substantive answers regardless of question length. Even simple questions deserve depth.\n'
+    +'- Think like an expert who genuinely cares: explain the why, the context, the nuances.\n'
+    +'- Short question ≠ short answer. A one-line question can need a detailed answer.\n'
+    +'- Structure longer answers with clear sections. Use bullet points, bold text, and headers naturally.\n'
+    +'- Code: complete, working, with line-by-line comments.\n'
+    +'- Recommendations: give your actual opinion with reasoning, not a list of options without guidance.\n'
+    +'- Never say "it depends" without immediately explaining all the ways it depends.\n'
+    +'- End with a practical next step or tip when relevant.\n'
+    +'- Files/images: analyze thoroughly, reference specific content, give detailed insights.\n'
+    +'\n'
+    +'FORMATTING — READABILITY (CRITICAL):\n'
+    +'- ALWAYS separate different ideas with blank lines. Never write continuous blocks of text.\n'
+    +'- Every new point or topic starts a new paragraph.\n'
+    +'- For answers with 3+ points: use bullet points or numbered list.\n'
+    +'- For long answers: use bold headers to separate sections.\n'
+    +'- Minimum: 2 paragraph breaks in any answer longer than 3 sentences.\n'
+    +'- Think of your response like a well-formatted article, not a text message.\n'
+    +'- Each distinct idea, step, or fact gets its own visual space.';
 
   let fullText=userText;
   if(files&&files.length){
@@ -1325,17 +1405,168 @@ function addUser(text, files){
   document.getElementById('welcome')?.remove();
   let fileHtml='';
   if(files&&files.length){
-    files.forEach(f=>{
+    files.forEach(function(f){
       if(f.type.startsWith('image/')){
-        fileHtml+=`<img class="msg-img" src="${f.dataUrl}" alt="${esc(f.name)}">`;
+        fileHtml+='<img class="msg-img" src="'+f.dataUrl+'" alt="'+esc(f.name)+'">';
       } else {
-        fileHtml+=`<div class="msg-file"><span>📄</span>${esc(f.name)}</div>`;
+        fileHtml+='<div class="msg-file"><span>📄</span>'+esc(f.name)+'</div>';
       }
     });
   }
-  const d=document.createElement('div');d.className='msg-wrap msg-user';
-  d.innerHTML='<div class="msg-inner"><div class="user-bubble">'+fileHtml+esc(text)+'</div></div>';
-  area.appendChild(d);scrollD(true);
+  const msgId='um'+(++msgN);
+  const d=document.createElement('div');
+  d.className='msg-wrap msg-user';
+  // ボタンはDOMで作るのでquote問題なし
+  const inner=document.createElement('div');inner.className='msg-inner';
+  const msgWrap=document.createElement('div');msgWrap.className='user-msg-wrap';
+  const actions=document.createElement('div');actions.className='user-actions';
+
+  const copyBtn=document.createElement('button');
+  copyBtn.className='user-action-btn';copyBtn.title='コピー';
+  copyBtn.innerHTML=ICOPY;
+  copyBtn.addEventListener('click',function(){
+    const el=document.getElementById(msgId);
+    if(el) doCopy(el.innerText, copyBtn);
+  });
+
+  const editBtn=document.createElement('button');
+  editBtn.className='user-action-btn';editBtn.title='編集して再送信';
+  editBtn.innerHTML='<svg viewBox="0 0 24 24" style="width:11px;height:11px;fill:currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>';
+  editBtn.addEventListener('click',function(){
+    editUserMsg(msgId);
+  });
+
+  actions.appendChild(copyBtn);
+  actions.appendChild(editBtn);
+
+  const bubble=document.createElement('div');
+  bubble.className='user-bubble';
+  bubble.id=msgId;
+  bubble.innerHTML=fileHtml+esc(text);
+
+  msgWrap.appendChild(actions);
+  msgWrap.appendChild(bubble);
+  inner.appendChild(msgWrap);
+  d.appendChild(inner);
+  area.appendChild(d);
+  scrollD(true);
+}
+
+function copyUserMsg(btn, id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  doCopy(el.innerText, btn);
+}
+
+
+function copyUserMsg(btn,id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  doCopy(el.innerText,btn);
+}
+
+function editUserMsg(bubbleId){
+  const el=document.getElementById(bubbleId);
+  if(!el)return;
+  const originalText=el.innerText.trim();
+
+  // 既存の編集パネルがあれば閉じる
+  const existing=document.getElementById('edit-panel');
+  if(existing)existing.remove();
+
+  // 編集パネルを作成（送信したメッセージの直下に挿入）
+  const wrap=el.closest('.msg-wrap');
+  const panel=document.createElement('div');
+  panel.id='edit-panel';
+  panel.style.cssText='max-width:780px;margin:0 auto;padding:0 24px 16px;';
+  panel.innerHTML=
+    '<div style="background:var(--surface);border:1px solid var(--grok);border-radius:10px;padding:12px 14px;">'
+    +'<div style="font-family:var(--mono);font-size:9px;color:var(--grok);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">✏ メッセージを編集</div>'
+    +'<textarea id="edit-ta" style="width:100%;background:none;border:none;outline:none;color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.7;resize:none;min-height:60px;max-height:200px;overflow-y:auto;">'+originalText+'</textarea>'
+    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">'
+    +'<button onclick="cancelEdit()" style="padding:5px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--fg2);font-family:var(--mono);font-size:11px;cursor:pointer;">キャンセル</button>'
+    +'<button onclick="submitEdit('+JSON.stringify(bubbleId)+')" style="padding:5px 16px;background:var(--grok);border:none;border-radius:6px;color:#fff;font-family:var(--mono);font-size:11px;cursor:pointer;font-weight:700;">再送信 →</button>'
+    +'</div>'
+    +'</div>';
+
+  // wrap の後に挿入
+  if(wrap&&wrap.parentNode){
+    wrap.parentNode.insertBefore(panel,wrap.nextSibling);
+  }
+
+  // テキストエリアの自動リサイズ
+  const ta=document.getElementById('edit-ta');
+  if(ta){
+    ta.style.height='auto';
+    ta.style.height=Math.min(ta.scrollHeight,200)+'px';
+    ta.addEventListener('input',function(){
+      this.style.height='auto';
+      this.style.height=Math.min(this.scrollHeight,200)+'px';
+    });
+    ta.focus();
+    ta.setSelectionRange(ta.value.length,ta.value.length);
+  }
+  scrollD(true);
+}
+
+function cancelEdit(){
+  const p=document.getElementById('edit-panel');
+  if(p)p.remove();
+}
+
+function submitEdit(bubbleId){
+  const ta=document.getElementById('edit-ta');
+  if(!ta)return;
+  const newText=ta.value.trim();
+  if(!newText)return;
+
+  // 編集パネルを閉じる
+  const panel=document.getElementById('edit-panel');
+  const wrap=document.getElementById(bubbleId)?.closest('.msg-wrap');
+
+  // 対応するAI返答を削除
+  const nextWrap=wrap?wrap.nextElementSibling:null;
+  if(panel)panel.remove();
+  if(nextWrap&&nextWrap.classList.contains('msg-ai'))nextWrap.remove();
+
+  // 元のユーザーメッセージを削除
+  if(wrap)wrap.remove();
+
+  // 履歴から最後のuser+assistantを削除
+  if(hist.length>=2&&hist[hist.length-1].role==='assistant'){
+    hist.splice(-2,2);
+  } else if(hist.length>=1&&hist[hist.length-1].role==='user'){
+    hist.splice(-1,1);
+  }
+
+  // 新しいテキストで再送信
+  run(newText);
+}
+
+function copyUserMsg(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const btn=el.previousElementSibling?.querySelector('[title="コピー"]');
+  doCopy(el.innerText,btn||{innerHTML:'',classList:{add:function(){},remove:function(){}}});
+}
+
+function editUserMsg(bubbleId){
+  const el=document.getElementById(bubbleId);
+  if(!el)return;
+  const text=el.innerText;
+  inp.value=text;
+  resize(inp);syncBtn();inp.focus();
+  // 対応するAI返答を削除して再送信しやすくする
+  const wrap=el.closest('.msg-wrap');
+  const next=wrap?.nextElementSibling;
+  if(next&&next.classList.contains('msg-wrap')&&next.classList.contains('msg-ai')){
+    next.remove();
+    // 履歴からも除去
+    if(hist.length>=2&&hist[hist.length-1].role==='assistant'&&hist[hist.length-2].role==='user'){
+      hist.splice(-2,2);
+    }
+  }
+  wrap?.remove();
 }
 function addAi(){
   const id=++msgN;
@@ -1447,11 +1678,9 @@ function restoreUI(){
 async function init(){
   await histLoad();
   await chatsLoad();
-  // アクティブなチャットがあれば復元
-  if(activeChatId){
-    const ch=chatList.find(c=>c.id===activeChatId);
-    if(ch){ hist=[...(ch.hist||[])]; }
-  }
+  // 起動時は常に新規チャット状態（自動的に既存チャットへ移動しない）
+  activeChatId=null;
+  hist=[];
   restoreUI();
   // ファイルinputイベント
   const fi=document.getElementById('file-input');
@@ -1464,8 +1693,8 @@ async function init(){
 document.addEventListener('DOMContentLoaded',init);
 document.addEventListener('visibilitychange',async()=>{
   if(document.visibilityState==='visible'){
-    const prev=hist.length;await histLoad();
-    if(hist.length!==prev){area.innerHTML='';msgN=0;restoreUI();}
+    // ページ復帰時は何もしない（ユーザー操作なしに画面が変わるのを防ぐ）
+    // チャット履歴はサイドバーを開いたときに最新化する
   }
 });
 </script>
