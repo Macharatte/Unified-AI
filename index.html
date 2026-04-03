@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Unified AI — 5モデル統合チャット</title>
+<title>Unified AI — Integration Generating APP</title>
+<link rel="icon" href="5color.PNG">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Zen+Kaku+Gothic+New:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
 /* デザインは維持 */
@@ -83,16 +84,16 @@ header {
 }
 
 .logo-text {
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 500;
+  font-family: var(--sans);
+  font-size: 17px;
+  font-weight: 700;
   color: var(--fg);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .logo-sub {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 12px;
   color: var(--fg);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -162,8 +163,8 @@ header {
   color: var(--fg);
   font-size: 14px;
   line-height: 1.7;
-  white-space: pre-wrap;
   word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .msg-ai .msg-inner {
@@ -402,6 +403,172 @@ header {
 .ex-prompt:hover { border-color: var(--fg3); color: var(--fg); background: var(--surface2); }
 .ex-prompt::before { content: '→ '; color: var(--fg3); font-family: var(--mono); }
 
+/* ═══ API ステータスパネル ═══ */
+#api-status-panel {
+  margin-top: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  text-align: left;
+}
+/* ═══ API ステータスパネル ═══ */
+.asp-title {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.asp-title::before {
+  content: '';
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--grok);
+  animation: asp-pulse 2s ease-in-out infinite;
+}
+@keyframes asp-pulse {
+  0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(74,158,255,.5); }
+  50%      { opacity:.6; box-shadow:0 0 0 6px rgba(74,158,255,0); }
+}
+
+/* セクション見出し */
+.asp-section-title {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin: 18px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* メーターカードグリッド（2列） */
+.asp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+/* 検索系は3列 */
+.asp-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+/* 共通メーターカード */
+.asp-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  transition: border-color .3s;
+}
+.asp-card-ok     { border-color: rgba(6,214,160,.25); }
+.asp-card-warn   { border-color: rgba(255,204,68,.3); }
+.asp-card-bad    { border-color: rgba(255,95,95,.35); background: rgba(255,95,95,.03); }
+.asp-card-idle   { border-color: var(--border2); }
+
+/* カード名ラベル */
+.asp-card-name {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+}
+.asp-card-bad .asp-card-name { color: var(--ds); }
+
+/* SVGアークゲージ共通 */
+.asp-arc-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.asp-arc-wrap svg { overflow: visible; display: block; }
+.asp-arc-bg   { fill:none; stroke:var(--surface2); stroke-linecap:round; }
+.asp-arc-fill { fill:none; stroke-linecap:round; transition: stroke-dashoffset .8s cubic-bezier(.16,1,.3,1), stroke .5s; }
+
+/* アーク中央テキスト */
+.asp-arc-inner {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.asp-arc-num   { font-family:var(--mono); font-weight:700; color:#fff; line-height:1; }
+.asp-arc-unit  { font-family:var(--mono); color:#fff; opacity:.55; margin-top:1px; }
+.asp-arc-cd    { font-family:var(--mono); font-weight:700; color:var(--ds); line-height:1; }
+.asp-arc-cdsub { font-family:var(--mono); color:var(--ds); opacity:.75; margin-top:2px; }
+
+/* カード下ステータステキスト */
+.asp-card-status {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: #fff;
+  opacity: .6;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.asp-card-bad  .asp-card-status { color:var(--ds); opacity:.85; }
+.asp-card-warn .asp-card-status { color:var(--llama); opacity:.85; }
+.asp-card-ok   .asp-card-status { color:var(--mistral); opacity:.85; }
+
+/* キャッシュ残りバー（カード内小バー） */
+.asp-mini-bar-wrap {
+  width: 100%;
+  height: 3px;
+  background: var(--surface2);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+.asp-mini-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width .6s ease;
+}
+
+/* リセットボタン */
+.asp-reset-btn {
+  margin-top: 14px;
+  width: 100%;
+  padding: 8px;
+  background: rgba(255,95,95,.1);
+  border: 1px solid rgba(255,95,95,.4);
+  border-radius: 6px;
+  color: var(--ds);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .05em;
+  cursor: pointer;
+  transition: all .15s;
+}
+.asp-reset-btn:hover { background:rgba(255,95,95,.22); border-color:var(--ds); }
+.asp-ok  { color: var(--mistral); }
+.asp-bad { color: var(--ds); }
+
 #input-area {
   flex-shrink: 0;
   padding: 16px 24px 20px;
@@ -622,16 +789,16 @@ body.sidebar-open #input-area { margin-left: 260px; transition: margin-left 0.25
 #sidebar-header .sb-title {
   font-family: var(--mono);
   font-size: 10px;
-  color: var(--fg3);
+  color: #ffffff;
   letter-spacing: .12em;
   text-transform: uppercase;
 }
 #sidebar-close {
   background: none; border: none; cursor: pointer;
-  color: var(--fg3); padding: 4px; border-radius: 4px;
+  color: #ffffff; padding: 4px; border-radius: 4px;
   display: flex; align-items: center; justify-content: center;
 }
-#sidebar-close:hover { color: var(--fg); background: var(--surface2); }
+#sidebar-close:hover { color: #ffffff; background: var(--surface2); }
 #sidebar-close svg { width: 14px; height: 14px; fill: currentColor; }
 
 #chat-list {
@@ -673,13 +840,13 @@ body.sidebar-open #input-area { margin-left: 260px; transition: margin-left 0.25
 }
 .chat-item-menu {
   background: none; border: none; cursor: pointer;
-  color: var(--fg3); padding: 3px 5px; border-radius: 3px;
+  color: #ffffff; padding: 3px 5px; border-radius: 3px;
   font-size: 13px; line-height: 1; opacity: 0;
   transition: opacity 0.12s;
   flex-shrink: 0;
 }
 .chat-item:hover .chat-item-menu { opacity: 1; }
-.chat-item-menu:hover { background: var(--surface2); color: var(--fg2); }
+.chat-item-menu:hover { background: var(--surface2); color: #ffffff; }
 
 /* サイドバートグルボタン */
 #sb-toggle {
@@ -801,9 +968,11 @@ body.sidebar-open #sidebar-overlay { display: block; }
 <div id="sidebar">
   <div id="sidebar-header">
     <span class="sb-title">チャット履歴</span>
-    <button id="sidebar-close" onclick="closeSidebar()">
-      <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-    </button>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button onclick="newChatFromSidebar()" title="新規チャット" style="background:var(--grok);border:none;cursor:pointer;color:#fff;width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor"><path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"/></svg></button>
+      <button onclick="clearAllChats()" title="全消去" style="background:rgba(255,95,95,0.12);border:1px solid rgba(255,95,95,0.35);cursor:pointer;color:var(--ds);width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;" onmouseover="this.style.background='rgba(255,95,95,0.25)'" onmouseout="this.style.background='rgba(255,95,95,0.12)'"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+      <button id="sidebar-close" onclick="closeSidebar()" style="background:none;border:none;cursor:pointer;color:var(--fg3);padding:4px;border-radius:4px;display:flex;align-items:center;"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    </div>
   </div>
   <div id="chat-list"></div>
 </div>
@@ -815,21 +984,9 @@ body.sidebar-open #sidebar-overlay { display: block; }
     <div class="logo-mark"></div>
     <div>
       <div class="logo-text">Unified AI</div>
-      <div class="logo-sub">5モデル統合推論</div>
     </div>
-    <button id="new-chat-btn" onclick="newChat()">
-      <svg viewBox="0 0 24 24"><path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"/></svg>
-      新規チャット
-    </button>
   </div>
-  <div class="model-badges" style="display:flex;align-items:center;gap:8px;">
-    <span class="mbadge mb-grok">Grok-1</span>
-    <span class="mbadge mb-ds">DeepSeek</span>
-    <span class="mbadge mb-llama">Llama 4</span>
-    <span class="mbadge mb-mistral">Mistral</span>
-    <span class="mbadge mb-qwen">Qwen</span>
-    <button id="apikey-btn" onclick="showApiKeyModal().then(k=>{if(k){};})" title="APIキー設定" style="display:none;padding:4px 10px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--fg3);font-family:var(--mono);font-size:9px;cursor:pointer;letter-spacing:.05em;transition:all .15s;">⚙ API KEY</button>
-  </div>
+  <div style="display:flex;align-items:center;gap:8px;"></div>
 </header>
 
 <div id="chat-area">
@@ -837,10 +994,10 @@ body.sidebar-open #sidebar-overlay { display: block; }
     <div class="welcome-logo"></div>
     <div class="welcome-title">Unified AI</div>
     <p class="welcome-sub white-text">
-      数多の生成AIの特性を参考に<br>
-      情報をウェブ検索して最も正確な回答を提供します。<br>
-      使用言語に合わせて出力します。<br>
-      ※このAIは各サービスとは関係ありません
+      数多の生成AIの特性を参考に情報をウェブ検索して最も正確な回答を提供します<br>
+      使用言語に合わせて出力します<br>
+      ※本サービスは公開情報を参考に独自実装したものであり、<br>
+      特定のAIサービスとは関係ありません
     </p>
     <div class="strategy-grid">
       <div class="strat-card"><div class="strat-name"><span class="strat-dot" style="background:var(--grok)"></span>Grok-1</div><div class="strat-desc">多角的な視点で質問を分析</div></div>
@@ -855,6 +1012,7 @@ body.sidebar-open #sidebar-overlay { display: block; }
       <div class="ex-prompt" onclick="setPrompt(this)">最新のChatGPT料金は？</div>
       <div class="ex-prompt" onclick="setPrompt(this)">コスパのいい百均のアイテムは?</div>
     </div>
+    <div id="api-status-panel"></div>
   </div>
 </div>
 
@@ -880,7 +1038,7 @@ body.sidebar-open #sidebar-overlay { display: block; }
 'use strict';
 
 /* ═══ ストレージ ═══ */
-const SK={CACHE:'uc',HIST:'uh',KEY:'uk',CHATS:'ucl',ACTIVE:'uca'};
+const SK={CACHE:'uc',HIST:'uh',KEY:'uk',CHATS:'ucl',ACTIVE:'uca',FRESH:'uf'};
 async function stGet(k){
   try{if(typeof window.storage!=='undefined'){const r=await window.storage.get(k);return r?r.value:null;}}catch(_){}
   try{return localStorage.getItem(k);}catch(_){return null;}
@@ -890,55 +1048,163 @@ async function stSet(k,v){
   try{localStorage.setItem(k,v);}catch(_){}
 }
 
-/* ═══ キャッシュ ═══ */
-let _c=null;
-async function cGet(t){
+/* ═══ キャッシュ（多層・有効期限付き） ═══
+  Layer 1: メモリ内マップ（最速・セッション中のみ）
+  Layer 2: localStorage / window.storage（永続・有効期限管理付き）
+
+  TTL:
+    通常質問（知識系）: 30日
+    最新情報系:         24時間
+    コード生成:         7日
+
+  キャッシュキーは「正規化テキスト + 会話コンテキストフィンガープリント」
+  → 会話中の同じ質問でも前の文脈が違えば別キーになる
+═══ */
+var _cache = Object.create(null); // メモリキャッシュ { key → {ans, ts, ttl} }
+var _cacheLoaded = false;
+
+function nQ(t){ return t.trim().toLowerCase().replace(/[\s\u3000.,!?！？。、]+/g,' ').trim(); }
+
+// 会話コンテキストのフィンガープリント（最新2件のAI応答から生成）
+function ctxFP(){
+  var recent = hist.filter(function(m){return m.role==='assistant';}).slice(-2);
+  if(!recent.length) return '0';
+  var s = recent.map(function(m){return (m.content||'').slice(0,80);}).join('|');
+  var h = 0;
+  for(var i=0;i<s.length;i++){ h=(Math.imul(31,h)+s.charCodeAt(i))|0; }
+  return (h>>>0).toString(36);
+}
+
+function cacheKey(text, inConversation){
+  var base = nQ(text);
+  // 会話中のみコンテキスト付きキーを使用（同じ質問でも文脈違いで別回答）
+  return inConversation ? base + '|' + ctxFP() : base;
+}
+
+async function cacheLoad(){
+  if(_cacheLoaded) return;
+  _cacheLoaded = true;
   try{
-    if(typeof window.storage!=='undefined'){
-      const r=await window.storage.get(SK.CACHE,true);
-      if(r){
-        const sh=JSON.parse(r.value||'{}');
-        const k=nQ(t);
-        if(sh[k])return sh[k];
-        for(const ck of Object.keys(sh))
-          if(ck.length>4&&(ck.includes(k)||k.includes(ck)))return sh[ck];
-      }
+    var raw = await stGet(SK.CACHE);
+    if(raw){
+      var obj = JSON.parse(raw);
+      var now = Date.now();
+      // 期限切れエントリを除去
+      Object.keys(obj).forEach(function(k){
+        var e = obj[k];
+        if(e && e.ts && e.ttl && (now - e.ts) < e.ttl){
+          _cache[k] = e;
+        }
+      });
     }
   }catch(_){}
-  if(!_c){try{_c=JSON.parse(await stGet(SK.CACHE)||'{}');}catch(_){_c={};}}
-  const k=nQ(t);
-  if(_c[k])return _c[k];
-  for(const ck of Object.keys(_c))if(ck.length>4&&(ck.includes(k)||k.includes(ck)))return _c[ck];
+}
+
+async function cacheSave(){
+  try{ stSet(SK.CACHE, JSON.stringify(_cache)); }catch(_){}
+}
+
+// TTL定数
+// ─ API応答キャッシュ ─
+var TTL_API       = 24*60*60*1000;        // 1日（Groq/Gemini API応答）
+// ─ 検索ソース別キャッシュ ─
+var TTL_APITUBE   = 10*60*1000;           // 10分（APITubeニュース：鮮度が命）
+var TTL_JINA      = 24*60*60*1000;        // 1日（Jinaウェブ検索）
+var TTL_WIKI      = 365*24*60*60*1000*10; // 事実上永久（10年）：Wikipediaは普遍的知識
+
+// API応答のTTLを返す（すべて1日統一）
+function pickTTL(text, inConversation, isSearch, isCode){
+  return TTL_API;
+}
+
+async function cGet(text, inConversation){
+  await cacheLoad();
+  var k = cacheKey(text, inConversation);
+  var now = Date.now();
+
+  // 完全一致
+  var e = _cache[k];
+  if(e && (now - e.ts) < e.ttl) return e.ans;
+
+  // 部分一致（会話外のみ・4文字以上のキー）
+  if(!inConversation){
+    var base = nQ(text);
+    for(var ck in _cache){
+      e = _cache[ck];
+      if(!e || (now - e.ts) >= e.ttl) continue;
+      var ckBase = ck.split('|')[0]; // コンテキスト部分を除去して比較
+      if(ckBase.length > 4 && (ckBase.includes(base) || base.includes(ckBase))) return e.ans;
+    }
+  }
   return null;
 }
-async function cSet(t,a){
-  const k=nQ(t);
-  try{
-    if(typeof window.storage!=='undefined'){
-      let sh={};
-      try{const r=await window.storage.get(SK.CACHE,true);if(r)sh=JSON.parse(r.value||'{}');}catch(_){}
-      sh[k]=a;
-      await window.storage.set(SK.CACHE,JSON.stringify(sh),true);
-    }
-  }catch(_){}
-  if(!_c)_c={};_c[k]=a;stSet(SK.CACHE,JSON.stringify(_c));
+
+async function cSet(text, ans, inConversation, isSearch, isCode){
+  await cacheLoad();
+  var k = cacheKey(text, inConversation);
+  var ttl = pickTTL(text, inConversation, isSearch, isCode);
+  _cache[k] = { ans: ans, ts: Date.now(), ttl: ttl };
+
+  // メモリ上限: 300件まで（古い順に削除）
+  var keys = Object.keys(_cache);
+  if(keys.length > 300){
+    keys.sort(function(a,b){ return _cache[a].ts - _cache[b].ts; });
+    keys.slice(0, 50).forEach(function(k2){ delete _cache[k2]; });
+  }
+  await cacheSave();
 }
-function nQ(t){return t.trim().toLowerCase().replace(/[\s\u3000.,!?！？。、]+/g,' ').trim();}
+
 
 /* ═══ 会話履歴 ═══ */
 let hist=[];
+let conversationSummary=''; // 古い会話の圧縮サマリー
+const HIST_FULL=20;   // 直近フルで保持するターン数（user+assistant）
+const HIST_MAX=60;    // 最大保持件数
+
 async function histLoad(){
   try{hist=JSON.parse(await stGet(SK.HIST)||'[]');}catch(_){hist=[];}
   if(!Array.isArray(hist))hist=[];
-  hist=hist.filter(m=>m&&m.role&&m.content).slice(-40);
+  hist=hist.filter(m=>m&&m.role&&m.content).slice(-HIST_MAX);
+  try{conversationSummary=await stGet('conv_summary')||'';}catch(_){}
 }
-function histSave(){stSet(SK.HIST,JSON.stringify(hist));}
-function histAdd(role,content){
+function histSave(){
+  stSet(SK.HIST,JSON.stringify(hist));
+  if(conversationSummary) stSet('conv_summary', conversationSummary);
+}
+function histAdd(role,content,display){
   if(hist.length&&hist[hist.length-1].role===role)hist.pop();
-  hist.push({role,content});
-  if(hist.length>40)hist=hist.slice(-40);
+  hist.push({role:role,content:content,display:display||content});
+  // 上限を超えたら古い部分をサマリーに圧縮して保持
+  if(hist.length>HIST_MAX){
+    var old=hist.splice(0, hist.length-HIST_FULL);
+    var oldText=old.map(function(m){
+      return (m.role==='user'?'User: ':'AI: ')+m.content.slice(0,300);
+    }).join('\n');
+    conversationSummary=(conversationSummary?conversationSummary+'\n':'')+oldText;
+    if(conversationSummary.length>3000) conversationSummary=conversationSummary.slice(-3000);
+  }
 }
 function histRollback(){if(hist.length&&hist[hist.length-1].role==='user')hist.pop();}
+
+// 文脈から短い・省略された質問を補完するためのコンテキスト抽出
+function buildConversationContext(){
+  if(!hist.length&&!conversationSummary) return '';
+  var lines=[];
+  if(conversationSummary){
+    lines.push('=== 過去の会話サマリー ===\n'+conversationSummary);
+  }
+  // 直近10件を詳細コンテキストとして提供
+  var recent=hist.slice(-10);
+  if(recent.length){
+    lines.push('=== 直近の会話 ===');
+    recent.forEach(function(m){
+      var label=m.role==='user'?'User':'AI';
+      var text=m.display||m.content;
+      lines.push(label+': '+text.slice(0,500));
+    });
+  }
+  return lines.join('\n');
+}
 
 /* ═══ 言語検出 ═══ */
 function dLang(t){
@@ -961,9 +1227,151 @@ const ON_CLAUDE=(()=>{
   }catch(_){return false;}
 })();
 
-/* ═══ Groq APIキー（難読化埋め込み） ═══ */
-const _GK='=IkUQVTUKBHWqRVY18WQZBjeLFFNph0SyklRzIWekd0VNZmWkhTUwYEbyIWckh3SMlTSHRzXrN3Z';
-function getKey(){return atob(_GK.split('').reverse().join(''));}
+/* ═══ APIキー管理 ═══
+   キーはメモリ上にのみ保持し、DOM・グローバル変数には露出させない。
+   難読化 + 即時実行クロージャでスコープを閉じる。
+═══ */
+const _APIKEYS=(()=>{
+  // Groq: base64逆順
+  const gk=atob('=IkUQVTUKBHWqRVY18WQZBjeLFFNph0SyklRzIWekd0VNZmWkhTUwYEbyIWckh3SMlTSHRzXrN3Z'.split('').reverse().join(''));
+  // Gemini: base64で難読化
+  const gmk=atob('QUl6YVN5QVBsMnUtRU42eG9SRTVNWElxUmc2aklGTTBjMHBnbG04');
+  return {
+    groq:()=>gk,
+    gemini:()=>gmk,
+  };
+})();
+
+/* ═══ APIサイクル & 制限状態管理 ═══
+   サイクル: Groq×50 → Gemini×100 → Groq×50 → …
+   制限が来た場合: 使える方を使い続け、両方解除後にサイクル復帰
+═══ */
+var _apiState=(()=>{
+  var GROQ_MAX=50, GEMINI_MAX=100;
+  var LIMIT_DURATION=60*60*1000; // 1時間
+
+  // 永続ストレージから復元
+  function _load(){
+    try{
+      var raw=localStorage.getItem('_apiCycleState');
+      if(raw){ var o=JSON.parse(raw); return o; }
+    }catch(_){}
+    return null;
+  }
+  function _save(state){
+    try{ localStorage.setItem('_apiCycleState', JSON.stringify({
+      cur:state.cur, groqCount:state.groqCount, geminiCount:state.geminiCount,
+      groqLimitUntil:state.groqLimitUntil, geminiLimitUntil:state.geminiLimitUntil
+    })); }catch(_){}
+  }
+
+  var saved=_load();
+  var state={
+    // 'groq' or 'gemini' — サイクル上の現在担当
+    cur: (saved&&saved.cur)||'groq',
+    groqCount:   (saved&&saved.groqCount)||0,
+    geminiCount: (saved&&saved.geminiCount)||0,
+    groqLimitUntil:   (saved&&saved.groqLimitUntil)||0,
+    geminiLimitUntil: (saved&&saved.geminiLimitUntil)||0,
+  };
+
+  function isLimited(api){
+    var t=api==='groq'?state.groqLimitUntil:state.geminiLimitUntil;
+    return t>0 && Date.now()<t;
+  }
+  function setLimit(api){
+    var until=Date.now()+LIMIT_DURATION;
+    if(api==='groq') state.groqLimitUntil=until;
+    else state.geminiLimitUntil=until;
+    _save(state);
+  }
+  function clearLimit(api){
+    if(api==='groq') state.groqLimitUntil=0;
+    else state.geminiLimitUntil=0;
+    _save(state);
+  }
+  function refreshLimits() {
+    var now = Date.now();
+
+    // Groq の制限解除
+    if (state.groqLimitUntil > 0 && now >= state.groqLimitUntil) {
+        state.groqLimitUntil = 0;
+        state.groqCount = 0;
+    }
+
+    // Gemini の制限解除
+    if (state.geminiLimitUntil > 0 && now >= state.geminiLimitUntil) {
+        state.geminiLimitUntil = 0;
+        state.geminiCount = 0;
+    }
+
+    _save(state);
+}
+
+  function resetTimeStr(api){
+    var t=api==='groq'?state.groqLimitUntil:state.geminiLimitUntil;
+    if(!t||Date.now()>=t) return null;
+    var d=new Date(t);
+    return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+  }
+
+  // サイクルに従って次に使うAPIを決定（制限考慮）
+  function nextApi(){
+    var groqOk=!isLimited('groq');
+    var geminiOk=!isLimited('gemini');
+
+    // 両方制限中
+    if(!groqOk&&!geminiOk) return null;
+
+    // 片方だけ使える → そちらを使う（サイクルカウントは進めない）
+    if(!groqOk) return 'gemini_fallback';
+    if(!geminiOk) return 'groq_fallback';
+
+    // 両方使える → サイクルに従う
+    if(state.cur==='groq'){
+      if(state.groqCount<GROQ_MAX) return 'groq';
+      // Groqのサイクル終了 → Geminiへ切替
+      state.cur='gemini'; state.groqCount=0; _save(state);
+      return 'gemini';
+    } else {
+      if(state.geminiCount<GEMINI_MAX) return 'gemini';
+      // Geminiのサイクル終了 → Groqへ切替
+      state.cur='groq'; state.geminiCount=0; _save(state);
+      return 'groq';
+    }
+  }
+
+  // 使用後にカウントを進める（fallback時はサイクルカウント不変）
+  function countUp(api, isFallback){
+    if(isFallback) return; // fallback中はカウント進めない
+    if(api==='groq') state.groqCount++;
+    else state.geminiCount++;
+    _save(state);
+  }
+
+  // 両方制限解除後にサイクルに戻す
+  function tryRestoreCycle(){
+    if(!isLimited('groq')&&!isLimited('gemini')){
+      // 制限が両方解けていたらカウントをリセットしてサイクル再開
+      if(state.groqLimitUntil>0||state.geminiLimitUntil>0){
+        state.groqLimitUntil=0; state.geminiLimitUntil=0;
+        state.groqCount=0; state.geminiCount=0;
+        state.cur='groq';
+        _save(state);
+        console.log('[API] Both limits cleared. Cycle reset to Groq.');
+      }
+    }
+  }
+  return { isLimited, setLimit, clearLimit, resetTimeStr, nextApi, countUp, tryRestoreCycle,refreshLimits,
+    getState:()=>({...state}) };
+})();
+
+// API制限状態を強制リセット（ボタン押下 or 起動時に呼ぶ）
+function resetApiState(){
+  try{ localStorage.removeItem('_apiCycleState'); }catch(_){}
+  // ページリロードで完全リセット
+  location.reload();
+}
 
 
 /* ═══ チャット一覧管理 ═══ */
@@ -991,12 +1399,13 @@ async function saveCurrentChat(){
       chatList[idx].hist = [...hist];
       chatList[idx].title = title;
       chatList[idx].updatedAt = Date.now();
+      chatList[idx].summary = conversationSummary;
     } else {
-      chatList.unshift({id:activeChatId, title, hist:[...hist], updatedAt:Date.now()});
+      chatList.unshift({id:activeChatId, title, hist:[...hist], updatedAt:Date.now(), summary:conversationSummary});
     }
   } else {
     activeChatId = chatsGen();
-    chatList.unshift({id:activeChatId, title, hist:[...hist], updatedAt:Date.now()});
+    chatList.unshift({id:activeChatId, title, hist:[...hist], updatedAt:Date.now(), summary:conversationSummary});
     stSet(SK.ACTIVE, activeChatId);
   }
   // 最大50件保持
@@ -1010,7 +1419,7 @@ function renderChatList(){
   const el = document.getElementById('chat-list');
   if(!el) return;
   if(!chatList.length){
-    el.innerHTML='<div style="padding:20px 12px;font-size:11px;color:var(--fg3);text-align:center;font-family:var(--mono);">チャット履歴はありません</div>';
+    el.innerHTML='<div style="padding:20px 12px;font-size:11px;color:#ffffff;text-align:center;font-family:var(--mono);">チャット履歴はありません</div>';
     return;
   }
   el.innerHTML = chatList.map(ch=>{
@@ -1036,6 +1445,7 @@ async function loadChat(id){
   // 読み込み
   activeChatId = id;
   hist = [...(ch.hist||[])];
+  conversationSummary = ch.summary||'';
   stSet(SK.ACTIVE, activeChatId);
   // UI再構築
   area.innerHTML=''; msgN=0;
@@ -1085,16 +1495,25 @@ function updateAttachPreview(){
   if(!el) return;
   if(!attachedFiles.length){ el.innerHTML=''; return; }
   el.innerHTML = attachedFiles.map((f,i)=>{
+    var sizeStr='';
+    if(f.size){
+      if(f.size>1024*1024) sizeStr=' ('+Math.round(f.size/1024/1024*10)/10+'MB)';
+      else if(f.size>1024) sizeStr=' ('+(Math.round(f.size/1024))+'KB)';
+      else sizeStr=' ('+f.size+'B)';
+    } else if(f.text){
+      var chars=f.text.length;
+      if(chars>1000) sizeStr=' ('+(Math.round(chars/100)/10)+'K文字)';
+    }
     if(f.type.startsWith('image/')){
       return `<div class="attach-chip">
         <img class="attach-chip-img" src="${f.dataUrl}" alt="${esc(f.name)}">
-        <span>${esc(f.name)}</span>
+        <span>${esc(f.name)}${esc(sizeStr)}</span>
         <button class="attach-remove" onclick="removeAttach(${i})">×</button>
       </div>`;
     }
     return `<div class="attach-chip">
       <span class="attach-chip-icon">📄</span>
-      <span>${esc(f.name)}</span>
+      <span>${esc(f.name)}${esc(sizeStr)}</span>
       <button class="attach-remove" onclick="removeAttach(${i})">×</button>
     </div>`;
   }).join('');
@@ -1108,20 +1527,48 @@ function handleFileSelect(e){
   const files = Array.from(e.target.files||[]);
   e.target.value='';
   files.forEach(file=>{
+    // ファイルサイズ警告（10MB超）
+    if(file.size>10*1024*1024){
+      if(!confirm('「'+file.name+'」は'+Math.round(file.size/1024/1024)+'MBと非常に大きいです。\n処理に時間がかかる場合があります。続けますか？')){
+        return;
+      }
+    }
     const reader = new FileReader();
     if(file.type.startsWith('image/')){
       reader.onload = ev => {
-        attachedFiles.push({name:file.name,type:file.type,dataUrl:ev.target.result,text:null});
+        attachedFiles.push({name:file.name,type:file.type,dataUrl:ev.target.result,text:null,size:file.size});
         updateAttachPreview();
         syncBtn();
       };
       reader.readAsDataURL(file);
     } else {
-      // テキスト系ファイル
+      // テキスト系ファイル（UTF-8で試みて、失敗したらShift-JIS）
       reader.onload = ev => {
-        attachedFiles.push({name:file.name,type:file.type,dataUrl:null,text:ev.target.result});
-        updateAttachPreview();
-        syncBtn();
+        var text = ev.target.result;
+        // 文字化けチェック（UTF-8で読めなかった場合）
+        if(text.indexOf('\uFFFD')!==-1 && text.indexOf('\uFFFD')<1000){
+          // Shift-JISで再読み込み
+          var reader2=new FileReader();
+          reader2.onload=function(ev2){
+            attachedFiles.push({name:file.name,type:file.type,dataUrl:null,text:ev2.target.result,size:file.size});
+            updateAttachPreview();
+            syncBtn();
+          };
+          reader2.onerror=function(){
+            // どちらでも読めない場合はUTF-8のまま使用
+            attachedFiles.push({name:file.name,type:file.type,dataUrl:null,text:text,size:file.size});
+            updateAttachPreview();
+            syncBtn();
+          };
+          reader2.readAsText(file,'Shift-JIS');
+        } else {
+          attachedFiles.push({name:file.name,type:file.type,dataUrl:null,text:text,size:file.size});
+          updateAttachPreview();
+          syncBtn();
+        }
+      };
+      reader.onerror = () => {
+        alert('ファイル「'+file.name+'」の読み込みに失敗しました。');
       };
       reader.readAsText(file, 'UTF-8');
     }
@@ -1132,7 +1579,7 @@ function handleFileSelect(e){
 function buildWelcome(){
   const w=document.createElement('div');w.id='welcome';
   w.innerHTML='<div class="welcome-logo"></div><div class="welcome-title">Unified AI</div>'
-    +'<p class="welcome-sub white-text">Grok-1・DeepSeek-V3・Llama 4・Mistral・Qwen 3.5 の各分野における長所を統合し、<br>最新情報をウェブ検索して最も正確な回答を提供します。使用言語に合わせて出力します。<br>※このAIは各サービスとは関係ありません</p>'
+    +'<p class="welcome-sub white-text">数多の生成AIの特性を参考に情報をウェブ検索して最も正確な回答を提供します<br>使用言語に合わせて出力します<br>※本サービスは公開情報を参考に独自実装したものであり、<br>特定のAIサービスとは関係ありません</p>'
     +'<div class="strategy-grid">'
     +'<div class="strat-card"><div class="strat-name"><span class="strat-dot" style="background:var(--grok)"></span>Grok-1</div><div class="strat-desc">多角的な視点で質問を分析</div></div>'
     +'<div class="strat-card"><div class="strat-name"><span class="strat-dot" style="background:var(--ds)"></span>DeepSeek</div><div class="strat-desc">段階的推論で深く考える</div></div>'
@@ -1145,16 +1592,341 @@ function buildWelcome(){
     +'<div class="ex-prompt" onclick="setPrompt(this)">今流行りの動画は?</div>'
     +'<div class="ex-prompt" onclick="setPrompt(this)">最新のChatGPT料金は？</div>'
     +'<div class="ex-prompt" onclick="setPrompt(this)">コスパのいい百均のアイテムは?</div>'
-    +'</div>';
+    +'</div>'
+    +'<div id="api-status-panel"></div>';
   return w;
 }
+
+/* ═══ API リアルタイムステータスパネル ═══ */
+var _aspTimer = null;
+
+function renderApiPanel(){
+  var panel = document.getElementById('api-status-panel');
+  if(!panel) return;
+
+  var state = _apiState.getState();
+  var now = Date.now();
+  var GROQ_MAX = 50, GEMINI_MAX = 100;
+
+  var groqLimited   = state.groqLimitUntil  > 0 && now < state.groqLimitUntil;
+  var geminiLimited = state.geminiLimitUntil > 0 && now < state.geminiLimitUntil;
+  var bothLimited   = groqLimited && geminiLimited;
+
+  var groqUsed   = state.groqCount  || 0;
+  var geminiUsed = state.geminiCount || 0;
+  var groqRemain   = groqLimited   ? 0 : Math.max(0, GROQ_MAX   - groqUsed);
+  var geminiRemain = geminiLimited ? 0 : Math.max(0, GEMINI_MAX - geminiUsed);
+
+  // 検索APIカウント
+  var apitubeUsed = _searchCount.apitube || 0;
+  var jinaUsed    = _searchCount.jina    || 0;
+  var apitubeRemain = Math.max(0, APITUBE_MAX - apitubeUsed);
+  var jinaRemain    = Math.max(0, JINA_MAX    - jinaUsed);
+  var apitubePct    = Math.round((apitubeRemain / APITUBE_MAX) * 100);
+  var jinaPct       = Math.round((jinaRemain    / JINA_MAX)    * 100);
+
+  /* フォーマット helpers */
+  function fmtRemain(until){
+    if(!until || Date.now() >= until) return null;
+    var ms = until - Date.now();
+    var h  = Math.floor(ms / 3600000);
+    var m  = Math.floor((ms % 3600000) / 60000);
+    var s  = Math.floor((ms % 60000) / 1000);
+    if(h > 0) return h + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }
+  function fmtTime(until){
+    if(!until) return '';
+    var d = new Date(until);
+    return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0') + ' に解除';
+  }
+  function fmtDur(ms){
+    if(ms < 60000) return Math.floor(ms/1000) + '秒前';
+    if(ms < 3600000) return Math.floor(ms/60000) + '分前';
+    return Math.floor(ms/3600000) + '時間前';
+  }
+
+  /* ── ON_CLAUDE モード ── */
+  if(ON_CLAUDE){
+    panel.innerHTML =
+      '<div class="asp-title">API 使用状況</div>'
+      + '<div style="padding:10px 0;text-align:center;">'
+      + '<div style="font-size:14px;color:var(--mistral);margin-bottom:6px;">✅ Claude API 使用中</div>'
+      + '<div style="font-size:11px;color:var(--fg3);">Claude.ai 上ではClaudeが直接応答します</div>'
+      + '</div>';
+    return;
+  }
+
+  /* ══════════════════════════════════
+     SVGアーク メーターカード生成
+     270°弧: -135° → +135°
+     R=34, CX=CY=42, arc周=2π×34×(270/360)≈160.2
+  ══════════════════════════════════ */
+  var R=34, CX=42, CY=42, ARC=2*Math.PI*R*(270/360); // ≈160.2
+
+  /* limitMeterCard: 制限あり/なしのAPIメーター（大） */
+  function limitCard(name, pct, limited, remain, until, maxVal, accentColor){
+    var cardClass = limited ? 'asp-card asp-card-bad'
+                  : pct < 20 ? 'asp-card asp-card-warn'
+                  : 'asp-card asp-card-ok';
+    var offset = ARC * (1 - pct/100);
+    var strokeColor = limited ? 'var(--ds)' : pct < 20 ? 'var(--llama)' : accentColor;
+
+    var centerHTML;
+    if(limited){
+      var cd = fmtRemain(until);
+      centerHTML = '<div class="asp-arc-cd" style="font-size:15px;">'+(cd||'--:--')+'</div>'
+        +'<div class="asp-arc-cdsub" style="font-size:8px;">解除まで</div>';
+    } else {
+      centerHTML = '<div class="asp-arc-num" style="font-size:20px;">'+remain+'</div>'
+        +'<div class="asp-arc-unit" style="font-size:8px;">残 / '+maxVal+'</div>';
+    }
+    var statusText = limited ? '⛔ 制限中 — '+fmtTime(until) : '✅ 利用可能';
+
+    return '<div class="'+cardClass+'">'
+      +'<div class="asp-card-name">'+name+'</div>'
+      +'<div class="asp-arc-wrap" style="width:84px;height:84px;">'
+      +'<svg width="84" height="84" viewBox="0 0 84 84">'
+      +'<circle class="asp-arc-bg" cx="'+CX+'" cy="'+CY+'" r="'+R+'" stroke-width="7"'
+      +' stroke-dasharray="'+ARC.toFixed(1)+' 10000"'
+      +' transform="rotate(135 '+CX+' '+CY+')"  />'
+      +'<circle class="asp-arc-fill" cx="'+CX+'" cy="'+CY+'" r="'+R+'" stroke-width="7"'
+      +' stroke="'+strokeColor+'"'
+      +' stroke-dasharray="'+ARC.toFixed(1)+' 10000"'
+      +' stroke-dashoffset="'+offset.toFixed(1)+'"'
+      +' transform="rotate(135 '+CX+' '+CY+')" />'
+      +'</svg>'
+      +'<div class="asp-arc-inner">'+centerHTML+'</div>'
+      +'</div>'
+      +'<div class="asp-card-status">'+statusText+'</div>'
+      +'</div>';
+  }
+
+  /* cacheCard: キャッシュ系メーター（小・TTLベース）
+     pct = TTL残り時間の割合（0〜100）
+     count = キャッシュ件数
+  */
+  var RC=26, CXC=30, CYC=30, ARCC=2*Math.PI*RC*(270/360); // ≈123.2
+
+  function cacheCard(name, count, lastMs, ttl, isForever, accentColor){
+    var pct, statusText, centerHTML, cardClass;
+
+    if(!count){
+      /* 未使用 */
+      pct = 0;
+      cardClass = 'asp-card asp-card-idle';
+      centerHTML = '<div class="asp-arc-unit" style="font-size:8px;opacity:.4;">未使用</div>';
+      statusText = '—';
+    } else if(isForever){
+      /* 永久キャッシュ（Wikipedia） */
+      pct = 100;
+      cardClass = 'asp-card asp-card-ok';
+      centerHTML = '<div class="asp-arc-num" style="font-size:16px;">'+count+'</div>'
+        +'<div class="asp-arc-unit" style="font-size:7px;">件</div>';
+      statusText = '永久 / '+fmtDur(Date.now()-lastMs);
+    } else {
+      /* TTLあり — 残り時間 */
+      var expire = lastMs + ttl;
+      var remaining = expire - Date.now();
+      if(remaining <= 0){
+        pct = 0; cardClass = 'asp-card asp-card-idle';
+        centerHTML = '<div class="asp-arc-unit" style="font-size:8px;opacity:.4;">期限切れ</div>';
+        statusText = count+'件（期限切れ）';
+      } else {
+        pct = Math.min(100, Math.round((remaining / ttl) * 100));
+        cardClass = pct < 20 ? 'asp-card asp-card-warn' : 'asp-card asp-card-ok';
+        var rm2 = Math.floor(remaining/60000), rs2 = Math.floor((remaining%60000)/1000);
+        var cdStr = rm2 > 0 ? rm2+'分'+rs2+'秒' : rs2+'秒';
+        centerHTML = '<div class="asp-arc-num" style="font-size:14px;">'+count+'</div>'
+          +'<div class="asp-arc-unit" style="font-size:7px;">件</div>';
+        statusText = '残 '+cdStr;
+      }
+    }
+
+    var offset2 = ARCC * (1 - pct/100);
+    var strokeC  = !count || pct===0 ? 'var(--fg3)'
+                 : pct < 20          ? 'var(--llama)'
+                 : accentColor;
+
+    return '<div class="'+cardClass+'">'
+      +'<div class="asp-card-name" style="font-size:9px;">'+name+'</div>'
+      +'<div class="asp-arc-wrap" style="width:60px;height:60px;">'
+      +'<svg width="60" height="60" viewBox="0 0 60 60">'
+      +'<circle class="asp-arc-bg" cx="'+CXC+'" cy="'+CYC+'" r="'+RC+'" stroke-width="5"'
+      +' stroke-dasharray="'+ARCC.toFixed(1)+' 10000"'
+      +' transform="rotate(135 '+CXC+' '+CYC+')" />'
+      +'<circle class="asp-arc-fill" cx="'+CXC+'" cy="'+CYC+'" r="'+RC+'" stroke-width="5"'
+      +' stroke="'+strokeC+'"'
+      +' stroke-dasharray="'+ARCC.toFixed(1)+' 10000"'
+      +' stroke-dashoffset="'+offset2.toFixed(1)+'"'
+      +' transform="rotate(135 '+CXC+' '+CYC+')" />'
+      +'</svg>'
+      +'<div class="asp-arc-inner">'+centerHTML+'</div>'
+      +'</div>'
+      +'<div class="asp-card-status">'+statusText+'</div>'
+      +'</div>';
+  }
+
+  /* パーセント計算 */
+  var groqPct   = groqLimited   ? 0 : Math.round((groqRemain   / GROQ_MAX)   * 100);
+  var geminiPct = geminiLimited ? 0 : Math.round((geminiRemain / GEMINI_MAX) * 100);
+
+  /* 検索API用メーターカード（制限なし・残り回数表示） */
+  function searchCard(name, remain, maxVal, pct, accentColor){
+    var cardClass = pct < 10 ? 'asp-card asp-card-bad'
+                  : pct < 30 ? 'asp-card asp-card-warn'
+                  : 'asp-card asp-card-ok';
+    var offset = ARC * (1 - pct/100);
+    var strokeColor = pct < 10 ? 'var(--ds)' : pct < 30 ? 'var(--llama)' : accentColor;
+    var centerHTML = '<div class="asp-arc-num" style="font-size:20px;">'+remain+'</div>'
+      +'<div class="asp-arc-unit" style="font-size:8px;">残 / '+maxVal+'</div>';
+    var statusText = pct < 10 ? '⚠ 残りわずか' : '✅ 利用可能';
+    return '<div class="'+cardClass+'">'
+      +'<div class="asp-card-name">'+name+'</div>'
+      +'<div class="asp-arc-wrap" style="width:84px;height:84px;">'
+      +'<svg width="84" height="84" viewBox="0 0 84 84">'
+      +'<circle class="asp-arc-bg" cx="'+CX+'" cy="'+CY+'" r="'+R+'" stroke-width="7"'
+      +' stroke-dasharray="'+ARC.toFixed(1)+' 10000"'
+      +' transform="rotate(135 '+CX+' '+CY+')" />'
+      +'<circle class="asp-arc-fill" cx="'+CX+'" cy="'+CY+'" r="'+R+'" stroke-width="7"'
+      +' stroke="'+strokeColor+'"'
+      +' stroke-dasharray="'+ARC.toFixed(1)+' 10000"'
+      +' stroke-dashoffset="'+offset.toFixed(1)+'"'
+      +' transform="rotate(135 '+CX+' '+CY+')" />'
+      +'</svg>'
+      +'<div class="asp-arc-inner">'+centerHTML+'</div>'
+      +'</div>'
+      +'<div class="asp-card-status">'+statusText+'</div>'
+      +'</div>';
+  }
+
+  /* ステータスバッジ */
+  var curLabel = state.cur === 'groq' ? '現在: Groq 優先' : '現在: Gemini 優先';
+  var statusBadge = bothLimited
+    ? '<span style="font-size:10px;color:var(--ds);background:rgba(255,95,95,.1);border:1px solid rgba(255,95,95,.25);padding:2px 8px;border-radius:4px;font-family:var(--mono);">⛔ 両方制限中</span>'
+    : '<span style="font-size:10px;color:var(--mistral);background:rgba(6,214,160,.08);border:1px solid rgba(6,214,160,.2);padding:2px 8px;border-radius:4px;font-family:var(--mono);">✅ '+curLabel+'</span>';
+
+  /* キャッシュ集計 */
+  var now2=Date.now();
+  var apiTubeCount=0, apiTubeLastMs=0;
+  var wikiCount=0,    wikiLastMs=0;
+  var jinaCount=0,    jinaLastMs=0;
+  Object.keys(_searchCache).forEach(function(k){
+    var e=_searchCache[k]; if(!e||!e.val) return;
+    if(k.indexOf('apitube:')===0){ apiTubeCount++; if(e.ts>apiTubeLastMs) apiTubeLastMs=e.ts; }
+    else if(k.indexOf('wiki-ja:')===0||k.indexOf('wiki-en:')===0){ wikiCount++; if(e.ts>wikiLastMs) wikiLastMs=e.ts; }
+    else if(k.indexOf('jina:')===0){ jinaCount++; if(e.ts>jinaLastMs) jinaLastMs=e.ts; }
+  });
+
+  /* パネル描画 */
+  panel.innerHTML =
+    '<div class="asp-title">API 使用状況 — リアルタイム '+statusBadge+'</div>'
+
+    /* AI API 大メーター 2列 */
+    +'<div class="asp-section-title">生成 AI</div>'
+    +'<div class="asp-grid">'
+    +  limitCard('GROQ',   groqPct,   groqLimited,   groqRemain,   state.groqLimitUntil,   GROQ_MAX,   'var(--grok)')
+    +  limitCard('GEMINI', geminiPct, geminiLimited, geminiRemain, state.geminiLimitUntil, GEMINI_MAX, 'var(--qwen)')
+    +'</div>'
+
+    /* 検索API 大メーター 2列 */
+    +'<div class="asp-section-title">検索 API（セッション使用回数）</div>'
+    +'<div class="asp-grid">'
+    +  searchCard('APITube', apitubeRemain, APITUBE_MAX, apitubePct, 'var(--llama)')
+    +  searchCard('Jina Web', jinaRemain, JINA_MAX, jinaPct, 'var(--grok)')
+    +'</div>'
+
+    /* Wikipediaキャッシュ 小メーター */
+    +'<div class="asp-section-title">検索キャッシュ</div>'
+    +'<div class="asp-grid-3">'
+    +  cacheCard('APITube',   apiTubeCount, apiTubeLastMs, TTL_APITUBE, false, 'var(--llama)')
+    +  cacheCard('Wikipedia', wikiCount,    wikiLastMs,    TTL_WIKI,    true,  'var(--mistral)')
+    +  cacheCard('Jina Web',  jinaCount,    jinaLastMs,    TTL_JINA,    false, 'var(--grok)')
+    +'</div>'
+
+    +'<button class="asp-reset-btn" onclick="resetApiState()">⟳ 制限をリセット（ページ再読み込み）</button>';
+}
+
+/* 毎秒パネルを更新 */
+function startApiPanelTimer(){
+  if(_aspTimer) clearInterval(_aspTimer);
+  renderApiPanel();
+  _aspTimer = setInterval(function(){
+    /* パネルが画面上にある間だけ更新 */
+    if(document.getElementById('api-status-panel')){
+      renderApiPanel();
+    } else {
+      clearInterval(_aspTimer);
+      _aspTimer = null;
+    }
+  }, 1000);
+}
+
+/* 後方互換：ポップアップ系は呼ばれても何もしない */
+function showApiStatusInfo(){ }
+
 
 /* ═══ Groq API（ローカル環境・無料） ═══ */
 // OpenAI互換フォーマット
 // モデル: llama-3.3-70b-versatile（高性能・無料枠あり）
-async function callGroq(sys,messages,apiKey){
+// テキストのトークン数を概算（日本語は1文字≒1.5トークン、英語は4文字≒1トークン）
+function estimateTokens(text){
+  if(!text) return 0;
+  var jpChars=(text.match(/[\u3000-\u9FFF\uF900-\uFAFF]/g)||[]).length;
+  var enChars=text.length-jpChars;
+  return Math.ceil(jpChars*1.5 + enChars*0.25);
+}
+
+// メッセージ配列のトークン合計を概算
+function estimateMsgsTokens(sys, messages){
+  var total=estimateTokens(sys);
+  messages.forEach(function(m){
+    total+=estimateTokens(typeof m.content==='string'?m.content:JSON.stringify(m.content));
+  });
+  return total;
+}
+
+// コンテキストが大きすぎる場合に古い履歴を削除してサイズ調整
+function trimMessagesToFit(messages, maxTokens){
+  // 最初のuser/assistantペアは保護しない（会話的履歴なので最新を優先）
+  // ただし最後のuser（今回の送信）は必ず残す
+  var trimmed=messages.slice();
+  while(trimmed.length>1){
+    var tokens=trimmed.reduce(function(acc,m){
+      return acc+estimateTokens(typeof m.content==='string'?m.content:JSON.stringify(m.content));
+    },0);
+    if(tokens<=maxTokens) break;
+    // 最古のペア（user+assistant）を削除
+    trimmed.splice(0,2);
+  }
+  return trimmed;
+}
+
+async function callGroq(sys,messages,apiKey,model,_retryCount){
+  _apiState.refreshLimits();
+  if(_apiState.isLimited('groq')) throw new Error('GROQ_LIMIT');
+  model=model||'llama-3.3-70b-versatile';
+  _retryCount=_retryCount||0;
+
+  // モデルごとのコンテキスト上限（トークン）
+  var MODEL_CTX={
+    'llama-3.3-70b-versatile': 100000,
+    'llama-3.1-70b-versatile': 100000,
+    'llama-3.1-8b-instant':    100000,
+    'mixtral-8x7b-32768':       28000,
+  };
+  var ctxLimit=MODEL_CTX[model]||100000;
+  var inputLimit=ctxLimit-8192;
+
+  // 入力が大きすぎる場合は古い履歴をトリム
+  var totalTokens=estimateMsgsTokens(sys,messages);
+  if(totalTokens>inputLimit){
+    console.warn('Context too large ('+totalTokens+' tokens), trimming history...');
+    messages=trimMessagesToFit(messages, inputLimit-estimateTokens(sys));
+  }
+
   const ctrl=new AbortController();
-  const tid=setTimeout(()=>ctrl.abort(),25000);
+  const tid=setTimeout(()=>ctrl.abort(),120000);
   let res,raw;
   try{
     res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
@@ -1165,16 +1937,16 @@ async function callGroq(sys,messages,apiKey){
       },
       signal:ctrl.signal,
       body:JSON.stringify({
-        model:'llama-3.3-70b-versatile',
+        model:model,
         messages:[{role:'system',content:sys},...messages],
-        max_tokens:4096,
-        temperature:0.7,
+        max_tokens:8192,
+        temperature:0.2,
       }),
     });
     raw=await res.text();
   }catch(e){
     clearTimeout(tid);
-    if(e.name==='AbortError')throw new Error('応答がタイムアウトしました。再試行してください。');
+    if(e.name==='AbortError')throw new Error('応答がタイムアウトしました。内容を分割して再送してみてください。');
     throw new Error('接続エラー: '+e.message);
   }
   clearTimeout(tid);
@@ -1182,8 +1954,42 @@ async function callGroq(sys,messages,apiKey){
   if(!res.ok){
     const s=res.status;
     const msg=d?.error?.message||'';
+
+    // ── レート制限: 指数バックオフで最大3回リトライ ──
+    if(s===429){
+      if(_retryCount<3){
+        // Retry-After ヘッダーがあれば尊重、なければ指数待機
+        var wait=Math.pow(2,_retryCount+1)*1000 + Math.random()*500; // 2s, 4s, 8s
+        var retryAfter=res.headers&&res.headers.get&&res.headers.get('retry-after');
+        if(retryAfter) wait=Math.min(parseFloat(retryAfter)*1000+200, 30000);
+        console.warn('Rate limited. Waiting '+Math.round(wait/1000)+'s before retry '+(+_retryCount+1)+'/3...');
+        // カウントダウン表示
+        if(typeof showRateLimit==='function'&&_currentAiEl)
+          showRateLimit(_currentAiEl, wait, _retryCount+1, 3);
+        await new Promise(function(r){setTimeout(r,wait);});
+        if(typeof clearRateLimit==='function'&&_currentAiEl)
+          clearRateLimit(_currentAiEl);
+        return callGroq(sys,messages,apiKey,model,_retryCount+1);
+      }
+      throw new Error('GROQ_LIMIT');
+    }
+
     if(s===401)throw new Error('Groq APIキーが無効です。正しいキーを設定してください。');
-    if(s===429)throw new Error('リクエストが多すぎます。少し待ってから再試行してください。');
+    if(s===413||msg.toLowerCase().includes('too large')||msg.toLowerCase().includes('context')){
+      if(model==='llama-3.3-70b-versatile'){
+        console.warn('Context too large, retrying with llama-3.1-8b-instant');
+        return callGroq(sys,messages,apiKey,'llama-3.1-8b-instant',0);
+      }
+      throw new Error('入力が大きすぎて処理できませんでした。ファイルを分割して送るか、内容を短くして再送してください。');
+    }
+    if(s>=500){
+      if(_retryCount<2){
+        var wait2=Math.pow(2,_retryCount+1)*1000;
+        await new Promise(function(r){setTimeout(r,wait2);});
+        return callGroq(sys,messages,apiKey,model,_retryCount+1);
+      }
+      throw new Error('Groqサーバーエラーが発生しました。再試行してください。');
+    }
     throw new Error(msg||'Groq エラー: HTTP '+s);
   }
   const txt=d?.choices?.[0]?.message?.content||'';
@@ -1191,122 +1997,904 @@ async function callGroq(sys,messages,apiKey){
   return txt;
 }
 
-/* ═══ Claude API（Claude.ai環境専用・無料） ═══ */
-async function callClaude(sys,messages){
+/* ═══ Gemini API（フォールバック用） ═══ */
+async function callGemini(sys, messages, _retryCount){
+  _apiState.refreshLimits();
+  if (_apiState.isLimited("gemini")) throw new Error('GEMINI_LIMIT');
+  _apiState.countUp("gemini");
+
+  _retryCount=_retryCount||0;
+  var apiKey=_APIKEYS.gemini();
+  var model='gemini-2.0-flash';
+  var endpoint='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey;
+
+  var geminiMsgs=messages.map(function(m){
+    return {role: m.role==='assistant'?'model':'user', parts:[{text: m.content||''}]};
+  });
+
+  while(geminiMsgs.length>0 && geminiMsgs[0].role==='model'){
+    geminiMsgs.shift();
+  }
+
+
+  // 同じroleが連続している場合は内容を統合
+  var fixed=[];
+  geminiMsgs.forEach(function(m){
+    if(fixed.length>0 && fixed[fixed.length-1].role===m.role){
+      fixed[fixed.length-1].parts[0].text+='\n'+m.parts[0].text;
+    } else {
+      fixed.push(m);
+    }
+  });
+  geminiMsgs=fixed;
+  // システムプロンプトはsystemInstructionとして渡す
+  var body={
+    systemInstruction:{parts:[{text:sys}]},
+    contents: geminiMsgs,
+    generationConfig:{maxOutputTokens:8192, temperature:0.2},
+  };
+
   const ctrl=new AbortController();
-  const tid=setTimeout(()=>ctrl.abort(),25000);
+  const tid=setTimeout(()=>ctrl.abort(),120000);
+  let res,raw;
+  try{
+    res=await fetch(endpoint,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      signal:ctrl.signal,
+      body:JSON.stringify(body),
+    });
+    raw=await res.text();
+  }catch(e){
+    clearTimeout(tid);
+    if(e.name==='AbortError')throw new Error('Gemini: 応答がタイムアウトしました。');
+    throw new Error('Gemini 接続エラー: '+e.message);
+  }
+  clearTimeout(tid);
+  let d;try{d=JSON.parse(raw);}catch(_){throw new Error('Gemini: 応答の解析に失敗しました。');}
+  if(!res.ok){
+    var s=res.status;
+    var msg=(d&&d.error&&d.error.message)||'';
+    // 400/401 はキー不正・リクエスト不正 → LIMIT扱いせず即エラー
+    if(s===400||s===401){
+      var detail=msg||'リクエストが不正です';
+      throw new Error('Gemini エラー: HTTP '+s+' — '+detail);
+    }
+    if(s===429){
+      if(_retryCount<2){
+        var wait=Math.pow(2,_retryCount+1)*2000;
+        if(_currentAiEl) showRateLimit(_currentAiEl, wait, _retryCount+1, 2);
+        await new Promise(function(r){setTimeout(r,wait);});
+        if(_currentAiEl) clearRateLimit(_currentAiEl);
+        return callGemini(sys,messages,_retryCount+1);
+      }
+      throw new Error('GEMINI_LIMIT');
+    }
+    throw new Error('Gemini エラー: HTTP '+s+(msg?' — '+msg:''));
+  }
+  var txt='';
+  try{ txt=d.candidates[0].content.parts[0].text||''; }catch(_){}
+  if(!txt)throw new Error('Gemini: 応答が空でした。');
+  return txt;
+}
+
+/* ═══ Claude API（Claude.ai環境専用・無料） ═══ */
+async function callClaude(sys,messages,_retryCount){
+  _retryCount=_retryCount||0;
+  // Claude API のコンテキスト上限（約200kトークン）、出力8192確保
+  var inputLimit=180000;
+  var totalTokens=estimateMsgsTokens(sys,messages);
+  if(totalTokens>inputLimit){
+    console.warn('Claude context too large ('+totalTokens+' tokens), trimming...');
+    messages=trimMessagesToFit(messages, inputLimit-estimateTokens(sys));
+  }
+
+  const ctrl=new AbortController();
+  const tid=setTimeout(()=>ctrl.abort(),120000);
   let res,raw;
   try{
     res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       signal:ctrl.signal,
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4096,system:sys,messages}),
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8192,system:sys,messages}),
     });
     raw=await res.text();
   }catch(e){
     clearTimeout(tid);
-    if(e.name==='AbortError')throw new Error('応答がタイムアウトしました。再試行してください。');
+    if(e.name==='AbortError')throw new Error('応答がタイムアウトしました。ファイルが大きすぎる場合は分割して送ってください。');
     throw new Error('接続エラー: '+e.message);
   }
   clearTimeout(tid);
   let d;try{d=JSON.parse(raw);}catch(_){throw new Error('応答の解析に失敗しました。再試行してください。');}
-  if(!res.ok)throw new Error(d?.error?.message||'Claude API エラー: HTTP '+res.status);
+  if(!res.ok){
+    const s=res.status;
+    const msg=d?.error?.message||'';
+    if(s===413||msg.toLowerCase().includes('too large'))
+      throw new Error('ファイルが大きすぎて処理できませんでした。内容を短くして再送してください。');
+    // レート制限・過負荷: バックオフリトライ
+    if(s===429||s===529){
+      if(_retryCount<3){
+        var wait=Math.pow(2,_retryCount+1)*1500+Math.random()*500;
+        console.warn('Claude rate limited ('+s+'). Waiting '+Math.round(wait/1000)+'s...');
+        // カウントダウン表示
+        if(typeof showRateLimit==='function'&&_currentAiEl)
+          showRateLimit(_currentAiEl, wait, _retryCount+1, 3);
+        await new Promise(function(r){setTimeout(r,wait);});
+        if(typeof clearRateLimit==='function'&&_currentAiEl)
+          clearRateLimit(_currentAiEl);
+        return callClaude(sys,messages,_retryCount+1);
+      }
+      throw new Error('Claude APIのリクエスト制限に達しました。しばらく待ってから再送してください。');
+    }
+    if(s>=500){
+      if(_retryCount<2){
+        await new Promise(function(r){setTimeout(r,Math.pow(2,_retryCount+1)*1000);});
+        return callClaude(sys,messages,_retryCount+1);
+      }
+      throw new Error('サーバーエラーが発生しました。再試行してください。');
+    }
+    throw new Error(msg||'Claude API エラー: HTTP '+s);
+  }
   const txt=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
   if(!txt)throw new Error('応答が空でした。再試行してください。');
   return txt;
 }
 
 /* ═══ メイン送信 ═══ */
-async function ask(userText, files){
-  const L=dLang(userText);
-  const sys='You are Unified AI, a highly knowledgeable and conversational AI assistant. '
-    +'Reply ONLY in '+L+'. '
-    +'\n\n'
-    +'MOST IMPORTANT RULE — ANSWER THE EXACT QUESTION ASKED:\n'
-    +'- Read the user message carefully. Answer precisely what they asked, nothing else.\n'
-    +'- If asked for a price, give the price. If asked for a recipe, give the recipe. Do not drift off-topic.\n'
-    +'- If the question is ambiguous, pick the most reasonable interpretation and answer it directly, then briefly note your interpretation at the end.\n'
-    +'- Never substitute a related topic for the actual question asked.\n'
-    +'\n'
-    +'PERSONALITY & STYLE:\n'
-    +'- Talk like a knowledgeable friend. Natural, warm, direct. No corporate-speak.\n'
-    +'- No preamble like "Great question!" or "Certainly!". Start with the answer immediately.\n'
-    +'- Every response feels fresh — no fixed templates or repetitive patterns.\n'
-    +'- Match tone to question: casual for casual, detailed for technical.\n'
-    +'\n'
-    +'ACCURACY:\n'
-    +'- Always give specific, concrete information. No vague answers.\n'
-    +'- Prices: give exact amounts with currency. If uncertain, say "as of my last update: X — verify at official site."\n'
-    +'- Products: include model numbers, specs, where to buy, price ranges.\n'
-    +'- Facts: use specific numbers, dates, proper nouns. Never approximate vaguely.\n'
-    +'- Frequently-changing info (prices, news, rankings): warn user to verify latest.\n'
-    +'\n'
-    +'FORMAT & DEPTH:\n'
-    +'- ALWAYS give thorough, substantive answers regardless of question length. Even simple questions deserve depth.\n'
-    +'- Think like an expert who genuinely cares: explain the why, the context, the nuances.\n'
-    +'- Short question ≠ short answer. A one-line question can need a detailed answer.\n'
-    +'- Structure longer answers with clear sections. Use bullet points, bold text, and headers naturally.\n'
-    +'- Code: complete, working, with line-by-line comments.\n'
-    +'- Recommendations: give your actual opinion with reasoning, not a list of options without guidance.\n'
-    +'- Never say "it depends" without immediately explaining all the ways it depends.\n'
-    +'- End with a practical next step or tip when relevant.\n'
-    +'- Files/images: analyze thoroughly, reference specific content, give detailed insights.\n'
-    +'\n'
-    +'FORMATTING — READABILITY (CRITICAL):\n'
-    +'- ALWAYS separate different ideas with blank lines. Never write continuous blocks of text.\n'
-    +'- Every new point or topic starts a new paragraph.\n'
-    +'- For answers with 3+ points: use bullet points or numbered list.\n'
-    +'- For long answers: use bold headers to separate sections.\n'
-    +'- Minimum: 2 paragraph breaks in any answer longer than 3 sentences.\n'
-    +'- Think of your response like a well-formatted article, not a text message.\n'
-    +'- Each distinct idea, step, or fact gets its own visual space.';
 
-  let fullText=userText;
-  if(files&&files.length){
-    const tf=files.filter(function(f){return f.text!==null;});
-    if(tf.length){
-      fullText+='\n\n--- 添付ファイル ---';
-      tf.forEach(function(f){
-        const preview=f.text.length>8000?f.text.slice(0,8000)+'...(省略)':f.text;
-        fullText+='\nファイル名: '+f.name+'\n内容:\n'+preview+'\n';
-      });
-    }
-  }
+/* ═══ リアルタイム情報取得 ═══ */
 
-  histAdd('user',fullText);
+const _ATK='5gFNMpVOJpXVtBHW0hHbuNkQPl2RwVlN5NlcthUaIlWesl2S4lmRkNWQfVmdpx2XpBXY';
+function atKey(){ return atob(_ATK.split('').reverse().join('')); }
 
-  const msgsClaude=hist.map(function(m,i){
-    if(i===hist.length-1&&m.role==='user'&&files&&files.length){
-      const imgs=files.filter(function(f){return f.type.startsWith('image/');});
-      if(imgs.length){
-        const content=[{type:'text',text:fullText}];
-        imgs.forEach(function(f){
-          const b64=f.dataUrl.split(',')[1];
-          content.push({type:'image',source:{type:'base64',media_type:f.type,data:b64}});
-        });
-        return {role:'user',content:content};
-      }
-    }
-    return {role:m.role,content:m.content};
-  });
-  const msgsGroq=hist.map(function(m){return {role:m.role,content:m.content};});
+function needsSearch(text){
+  var t=text.toLowerCase();
 
-  try{
-    let ans;
-    if(ON_CLAUDE){
-      ans=await callClaude(sys,msgsClaude);
-    } else {
-      ans=await callGroq(sys,msgsGroq,getKey());
-    }
-    histAdd('assistant',ans);
-    histSave();
-    if(!files||!files.length) cSet(userText,ans);
-    return ans;
-  }catch(e){
-    histRollback();throw e;
+  // 【最新情報・時事】
+  var kwsLatest=['最新','新型','今年','今月','今日','現在','最近','今の','新しい',
+    '2024','2025','2026','値段','価格','料金','発売','リリース','発表','アップデート',
+    'iphone','pixel','galaxy','macbook','ipad','android','apple','samsung',
+    'chatgpt','gpt','gemini','claude','copilot','llama','openai',
+    'ニュース','速報','話題','トレンド','流行','人気','ランキング',
+    'latest','newest','current','price','release','news','today','update',
+  ];
+  if(kwsLatest.some(function(kw){ return t.indexOf(kw)>=0; })) return true;
+
+  // 【技術・ライブラリ・ツール情報】何か固有名詞+使い方・設定・エラーの質問
+  var kwsTech=[
+    'エラー','バグ','動かない','できない','わからない','インストール','設定','使い方','やり方',
+    'error','bug','install','setup','config','how to','tutorial','example','fix',
+    'react','vue','next','nuxt','svelte','angular','vite','webpack','babel',
+    'python','django','flask','fastapi','numpy','pandas','pytorch','tensorflow',
+    'node','express','deno','bun','typescript','javascript','tailwind','bootstrap',
+    'docker','kubernetes','nginx','aws','gcp','azure','firebase','supabase',
+    'git','github','vscode','cursor','api','rest','graphql','sql','mysql','postgres','mongodb',
+    'css','html','svg','canvas','webgl','three.js','gsap',
+  ];
+  if(kwsTech.some(function(kw){ return t.indexOf(kw)>=0; })) return true;
+
+  // 【人物・場所・事柄の説明を求める質問】
+  if(/[a-zA-Z0-9ぁ-ん一-龯]{2,}(とは|って何|はなに|について|を教えて|を解説|の意味|どういう)/.test(t)) return true;
+  // 「〇〇は？」形式で固有名詞っぽいもの
+  if(/[a-zA-Z0-9]{3,}/.test(text)&&/[はってどんな何]/.test(text)) return true;
+
+  return false;
+}
+
+function needsNews(text){
+  var t=text.toLowerCase();
+  return ['ニュース','速報','事件','話題','最新情報','今日の','今週の',
+    'news','breaking','today','トレンド','流行',
+  ].some(function(kw){ return t.indexOf(kw)>=0; });
+}
+
+function needsYouTube(text){
+  var t=text.toLowerCase();
+  return ['動画','youtube','ユーチューブ','今流行','流行り','バズ','人気動画','ショート',
+  ].some(function(kw){ return t.indexOf(kw)>=0; });
+}
+
+// APITube ニュース検索（500,000ソース・リアルタイム）
+// ─ 検索結果専用キャッシュ（APITube:10分, Wikipedia:永久, Jina:1日）─
+var _searchCache = {};
+// 検索API呼び出し回数カウンター（セッション内）
+var _searchCount = { apitube: 0, jina: 0 };
+var APITUBE_MAX = 100; // 無料枠目安
+var JINA_MAX = 200;    // 無料枠目安
+
+function scGet(key, ttl){
+  var e = _searchCache[key];
+  if(!e) return null;
+  if(Date.now() - e.ts > ttl) { delete _searchCache[key]; return null; }
+  return e.val;
+}
+function scSet(key, val, ttl){
+  // null/undefined は保存しない（無駄なエントリを作らない）
+  if(val === null || val === undefined) return;
+  _searchCache[key] = { val: val, ts: Date.now(), ttl: ttl };
+  // 上限200件
+  var ks = Object.keys(_searchCache);
+  if(ks.length > 200){
+    ks.sort(function(a,b){ return _searchCache[a].ts - _searchCache[b].ts; });
+    ks.slice(0,50).forEach(function(k){ delete _searchCache[k]; });
   }
 }
+
+async function searchAPITube(query){
+  var cacheKey = 'apitube:' + query.slice(0,80);
+  var cached = scGet(cacheKey, TTL_APITUBE);
+  if(cached !== null) return cached;
+  try{
+    if (!window.apitubeCache) window.apitubeCache = {};
+
+var kw = query.replace(/[？?！!。、　]/g,' ').trim().slice(0,80);
+
+// 短い質問では APITube を呼ばない
+if (kw.length < 10) {
+    return null;
+}
+
+// 同じキーワードなら API を呼ばずキャッシュを返す
+if (window.apitubeCache[kw]) {
+    var cached2 = window.apitubeCache[kw];
+    var articles2 = cached2 && cached2.results ? cached2.results : [];
+    if(!articles2.length) return null;
+    var parts2 = articles2.slice(0,4).map(function(a){
+      var title=a.title||'';
+      var summary=(a.summary||a.description||'').slice(0,150);
+      var src=a.source&&(a.source.name||a.source.domain)||'';
+      var dt=a.published_at||a.date||'';
+      return '【'+title+'】\n'+summary+(src?'\n出典: '+src+(dt?' ('+dt+')':''):'');
+    });
+    return '【最新ニュース (APITube)】\n'+parts2.join('\n\n');
+}
+
+var ctrl = new AbortController();
+var tid2 = setTimeout(() => ctrl.abort(), 8000);
+
+var url = 'https://api.apitube.io/v1/news/everything'
+    + '?title=' + encodeURIComponent(kw)
+    + '&per_page=5'
+    + '&api_key=' + atKey();
+
+var res = await fetch(url, { signal: ctrl.signal });
+clearTimeout(tid2);
+if(!res.ok){ return null; }
+var d = await res.json();
+window.apitubeCache[kw] = d;
+_searchCount.apitube++; // 実API呼び出しカウント
+
+var articles = d && d.results ? d.results : [];
+if(!articles.length){ return null; }
+var parts = articles.slice(0,4).map(function(a){
+  var title=a.title||'';
+  var summary=(a.summary||a.description||'').slice(0,150);
+  var src=a.source&&(a.source.name||a.source.domain)||'';
+  var dt=a.published_at||a.date||'';
+  return '【'+title+'】\n'+summary+(src?'\n出典: '+src+(dt?' ('+dt+')':''):'');
+});
+var result = '【最新ニュース (APITube)】\n'+parts.join('\n\n');
+scSet(cacheKey, result, TTL_APITUBE);
+return result;
+  }catch(e){ return null; }
+}
+
+// YouTube Innertube（キー不要）
+async function searchYouTube(query){
+  try{
+    var ctrl=new AbortController();
+    var tid=setTimeout(function(){ctrl.abort();},8000);
+    var res=await fetch('https://www.youtube.com/youtubei/v1/search',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      signal:ctrl.signal,
+      body:JSON.stringify({context:{client:{clientName:'WEB',clientVersion:'2.20240101.00.00'}},query:query}),
+    });
+    clearTimeout(tid);
+    if(!res.ok) return null;
+    var d=await res.json();
+    var items=[];
+    var secs=((d.contents||{}).twoColumnSearchResultsRenderer||{}).primaryContents;
+    secs=secs&&secs.sectionListRenderer?secs.sectionListRenderer.contents:[];
+    for(var si=0;si<secs.length;si++){
+      var secIt=(secs[si].itemSectionRenderer||{}).contents||[];
+      for(var ii=0;ii<secIt.length;ii++){
+        var v=secIt[ii].videoRenderer;
+        if(v&&v.videoId){
+          var vt=v.title&&v.title.runs&&v.title.runs[0]?v.title.runs[0].text:'';
+          var vv=v.viewCountText&&v.viewCountText.simpleText||'';
+          var vc=v.ownerText&&v.ownerText.runs&&v.ownerText.runs[0]?v.ownerText.runs[0].text:'';
+          var vp=v.publishedTimeText&&v.publishedTimeText.simpleText||'';
+          if(vt) items.push('【'+vt+'】\nチャンネル: '+vc+' / '+vv+' / '+vp+'\nhttps://youtu.be/'+v.videoId);
+          if(items.length>=5) break;
+        }
+      }
+      if(items.length>=5) break;
+    }
+    return items.length?'【YouTube検索結果】\n'+items.join('\n\n'):null;
+  }catch(e){ return null; }
+}
+
+// Jina AI Web検索（登録不要）
+async function searchJina(query){
+  var cacheKey = 'jina:' + query.slice(0,100);
+  var cached = scGet(cacheKey, TTL_JINA);
+  if(cached !== null) return cached;
+  try{
+    var ctrl=new AbortController();
+    var tid=setTimeout(function(){ctrl.abort();},10000);
+    var res=await fetch('https://s.jina.ai/'+encodeURIComponent(query),{
+      signal:ctrl.signal,
+      headers:{'Accept':'text/plain','X-Return-Format':'text'},
+    });
+    clearTimeout(tid);
+    if(!res.ok){ return null; }
+    var txt=await res.text();
+    var result=(txt&&txt.length>100)?'【ウェブ検索結果】\n'+txt.replace(/!\[.*?\]\(.*?\)/g,'').slice(0,3000):null;
+    if(result) _searchCount.jina++; // 実API呼び出しカウント
+    scSet(cacheKey, result, TTL_JINA);
+    return result;
+  }catch(e){ return null; }
+}
+
+// Wikipedia（フォールバック）
+async function searchWikipedia(query){
+  var cacheKey = 'wiki-ja:' + query.slice(0,80);
+  var cached = scGet(cacheKey, TTL_WIKI);
+  if(cached !== null) return cached;
+  try{
+    var kw=query.replace(/[？?！!。、　]/g,' ').trim().split(/\s+/)[0];
+    var ctrl=new AbortController();
+    var tid=setTimeout(function(){ctrl.abort();},6000);
+    var res=await fetch(
+      'https://ja.wikipedia.org/w/api.php?action=query&list=search&srsearch='
+      +encodeURIComponent(kw)+'&format=json&origin=*&srlimit=3',
+      {signal:ctrl.signal}
+    );
+    clearTimeout(tid);
+    if(!res.ok){ return null; }
+    var d=await res.json();
+    var hits=d&&d.query&&d.query.search?d.query.search:[];
+    if(!hits.length){ return null; }
+    var result=hits.slice(0,3).map(function(h){
+      return '【'+h.title+'】\n'+h.snippet.replace(/<[^>]+>/g,'');
+    }).join('\n\n');
+    scSet(cacheKey, result, TTL_WIKI);
+    return result;
+  }catch(e){ return null; }
+}
+
+// 統合検索
+// 検索クエリを最適化（「最新の〇〇」→「〇〇 2025」）
+function optimizeQuery(text){
+  var q=text;
+  var today=new Date();
+  var year=today.getFullYear();
+  // 「最新の」「今の」などを年号に置換
+  q=q.replace(/最新の?|今の?|現在の?|新型の?|新しい/g,'');
+  q=q.trim();
+  // 年号を付加（既にない場合）
+  if(q.indexOf('202')<0) q=q+' '+year;
+  return q.trim();
+}
+
+async function fetchRealtime(userText){
+  var results=[];
+  var promises=[];
+  var q=optimizeQuery(userText);
+  var qAlt=userText.replace(/最新の|今の|現在の|新しい/g,'').trim();
+  // 英語キーワードのみ抽出（技術系は英語の方が情報豊富）
+  var qEn=q.replace(/[\u3041-\u30FF\u4E00-\u9FFF]/g,'').trim();
+
+  // Jina（最も広くウェブをカバー）→ 日本語＋英語で並列
+  promises.push(searchJina(q).then(function(r){if(r)results.push(r);}));
+  if(qEn&&qEn.length>2&&qEn!==q)
+    promises.push(searchJina(qEn).then(function(r){if(r)results.push(r);}));
+  if(qAlt&&qAlt!==q)
+    promises.push(searchJina(qAlt).then(function(r){if(r)results.push(r);}));
+
+  // Wikipedia 日本語
+  promises.push(searchWikipedia(q).then(function(r){if(r)results.push(r);}));
+  // Wikipedia 英語版（技術・固有名詞に強い）
+  if(qEn&&qEn.length>2)
+    promises.push(searchWikipediaEn(qEn).then(function(r){if(r)results.push(r);}));
+
+  // APITube（ニュース・時事のみ — needsNews判定で絞る）
+  if(needsNews(userText)){
+    promises.push(searchAPITube(q).then(function(r){if(r)results.push(r);}));
+    if(qAlt&&qAlt!==q)
+      promises.push(searchAPITube(qAlt).then(function(r){if(r)results.push(r);}));
+  }
+
+  // YouTube（動画系のみ）
+  if(needsYouTube(userText))
+    promises.push(searchYouTube(q).then(function(r){if(r)results.push(r);}));
+
+  await Promise.allSettled(promises);
+  var seen=new Set();
+  var unique=results.filter(function(r){
+    var key=r.slice(0,50);
+    if(seen.has(key))return false;
+    seen.add(key);return true;
+  });
+  return unique.length ? unique.join('\n\n') : null;
+}
+
+// Wikipedia英語版（技術・固有名詞に強い）
+async function searchWikipediaEn(query){
+  var cacheKey = 'wiki-en:' + query.slice(0,80);
+  var cached = scGet(cacheKey, TTL_WIKI);
+  if(cached !== null) return cached;
+  try{
+    var kw=query.trim().split(' ').slice(0,4).join(' ');
+    var ctrl=new AbortController();
+    var tid=setTimeout(function(){ctrl.abort();},6000);
+    var res=await fetch(
+      'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch='
+      +encodeURIComponent(kw)+'&format=json&origin=*&srlimit=3',
+      {signal:ctrl.signal}
+    );
+    clearTimeout(tid);
+    if(!res.ok){ return null; }
+    var d=await res.json();
+    var hits=d&&d.query&&d.query.search?d.query.search:[];
+    if(!hits.length){ return null; }
+    var result='【Wikipedia EN】\n'+hits.slice(0,3).map(function(h){
+      return '['+h.title+']\n'+h.snippet.replace(/<[^>]+>/g,'');
+    }).join('\n\n');
+    scSet(cacheKey, result, TTL_WIKI);
+    return result;
+  }catch(e){ return null; }
+}
+
+
+
+// 検索結果から質問に関係する部分だけを抽出
+function filterSearch(searchText, query){
+  var qWords=query.replace(/[？?！!。、　はがをにでもへより]/g,' ')
+    .toLowerCase().trim().split(/\s+/).filter(function(w){return w.length>1;});
+  var blocks=searchText.split('\n\n');
+  var scored=blocks.map(function(b){
+    var l=b.toLowerCase();
+    var s=qWords.reduce(function(acc,w){return acc+(l.indexOf(w)>=0?1:0);},0);
+    return {text:b,score:s};
+  }).filter(function(b){return b.score>0;})
+    .sort(function(a,b){return b.score-a.score;});
+  if(!scored.length) return searchText;
+  return scored.slice(0,4).map(function(b){return b.text;}).join('\n\n');
+}
+
+// 文字数・語数・行数をカウント
+function countLength(text, type){
+  if(!text) return 0;
+  var t=(type||'').replace(/s$/,'').toLowerCase();
+  if(t==='行'||t==='line'){
+    return text.split('\n').length;
+  }
+  if(t==='word'||t==='語'){
+    return text.trim().split(/\s+/).filter(function(w){return w.length>0;}).length;
+  }
+  // デフォルト: 文字数（スペース・改行含む）
+  return text.length;
+}
+
+// ── 文字数・行数指定の検出 ──
+function detectLengthSpec(text){
+  function toNum(s){
+    return parseInt(s.replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}),10);
+  }
+  var result={type:null,min:null,max:null,exact:null,raw:''};
+
+  // 範囲: 「100〜200文字」「100-200文字」「100から200文字」
+  var m=text.match(/([０-９0-9]+)\s*[〜~～\-－から]\s*([０-９0-9]+)\s*(文字|字|word|語|行|line)/i);
+  if(m){result.type=m[3];result.min=toNum(m[1]);result.max=toNum(m[2]);result.raw=m[0];return result;}
+
+  // 上限: 「200文字以内／以下／まで」「最大200文字」
+  m=text.match(/([０-９0-9]+)\s*(文字|字|word|語|行|line)\s*(以内|以下|まで)/i)
+   ||text.match(/(?:最大|max)\s*([０-９0-9]+)\s*(文字|字|word|語|行|line)/i);
+  if(m){result.type=m[2];result.max=toNum(m[1]);result.min=Math.floor(result.max*0.7);result.raw=m[0];return result;}
+
+  // 下限: 「200文字以上」「最低200文字」「少なくとも200文字」
+  m=text.match(/([０-９0-9]+)\s*(文字|字|word|語|行|line)\s*以上/i)
+   ||text.match(/(?:最低|最小|少なくとも)\s*([０-９0-9]+)\s*(文字|字|word|語|行|line)/i);
+  if(m){result.type=m[2];result.min=toNum(m[1]);result.max=Math.ceil(result.min*1.5);result.raw=m[0];return result;}
+
+  // 程度: 「200文字程度／くらい／ほど／前後」「約200文字」
+  m=text.match(/([０-９0-9]+)\s*(文字|字|word|語|行|line)\s*(程度|くらい|ほど|前後|ぐらい|あたり)/i)
+   ||text.match(/(?:約|大体|おおよそ)\s*([０-９0-9]+)\s*(文字|字|word|語|行|line)/i);
+  if(m){
+    var c=toNum(m[1]);
+    result.type=m[2];result.exact=c;result.min=Math.floor(c*0.8);result.max=Math.ceil(c*1.2);result.raw=m[0];
+    return result;
+  }
+
+  // ぴったり・指定系: 「200文字で」「200文字にして」「200文字で書いて」など
+  m=text.match(/([０-９0-9]{2,})\s*(文字|字|word|語|行|line)/i);
+  if(m){
+    var n=toNum(m[1]);
+    // 動詞チェックを緩和：文字数の後に「で」「に」「にして」なども対象
+    var hasGenVerb=/(書い|作っ|生成|まとめ|要約|説明|記述|出力|翻訳|変換|短く|長く|コード|スクリプト|で$|にして|にまとめ|でお願い|で答え|で教え)/i.test(text);
+    var simpleSpec=/(文字で|字で|文字にして|字にして|文字でまとめ|文字でお願い|文字で答え|文字で教え)/i.test(text);
+    if((hasGenVerb||simpleSpec)&&n>=10&&n<=100000){
+      result.type=m[2];result.exact=n;result.min=Math.floor(n*0.88);result.max=Math.ceil(n*1.12);result.raw=m[0];
+      return result;
+    }
+    // 動詞なしでも数字+文字だけの場合は検出（ユーザーが明示的に指定していると判断）
+    if(n>=50&&n<=100000){
+      result.type=m[2];result.exact=n;result.min=Math.floor(n*0.88);result.max=Math.ceil(n*1.12);result.raw=m[0];
+      return result;
+    }
+  }
+  return null;
+}
+
+// コード・スクリプト生成リクエストの検出
+function detectCodeRequest(text){
+  var t=text.toLowerCase();
+  var codeKws=['コード','スクリプト','プログラム','関数','クラス','html','css','javascript',' js','python','java','typescript',' ts','react','vue','bash','shell','sql','php','ruby','go lang','rust','swift','kotlin'];
+  var genKws=['作って','書いて','生成','実装','作成','作る','書く','generate','create','write','implement','build','make'];
+  return codeKws.some(function(k){return t.indexOf(k)>=0;})
+      && genKws.some(function(k){return t.indexOf(k)>=0;});
+}
+
+async function ask(userText, files){
+  var L=dLang(userText);
+  var today=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
+
+  // ── 文字数・コード生成指定の検出 ──
+  var lengthSpec=detectLengthSpec(userText);
+  var isCodeReq=detectCodeRequest(userText);
+
+  // ── 添付ファイル ──
+  var fileCtx='';
+  if(files&&files.length){
+    var tf=files.filter(function(f){return f.text!==null;});
+    if(tf.length){
+      fileCtx+='\n\n--- 添付ファイル ---';
+      tf.forEach(function(f){
+        // ファイルサイズに応じて動的に上限を設定
+        // Groq: ~80,000トークン入力可能 → 約60,000文字をファイルに割り当て
+        // Claude: ~180,000トークン → 約100,000文字まで
+        var MAX = ON_CLAUDE ? 100000 : 60000;
+        var p=f.text;
+        var originalLen=p.length;
+        if(p.length>MAX){
+          // 先頭70% + 末尾30% を保持（先頭優先）
+          var head=p.slice(0,Math.floor(MAX*0.7));
+          var tail=p.slice(-Math.floor(MAX*0.3));
+          var omitted=originalLen-MAX;
+          p=head+'\n\n...(中略: 約'+omitted.toLocaleString()+'文字を省略)...\n\n'+tail;
+          console.warn('File "'+f.name+'" truncated: '+originalLen+' → '+MAX+' chars');
+        }
+        fileCtx+='\nファイル名: '+f.name+' ('+originalLen.toLocaleString()+'文字)\n内容:\n'+p+'\n';
+      });
+    }
+    // 画像ファイルも枚数を明示
+    var imgs=files.filter(function(f){return f.type&&f.type.startsWith('image/');});
+    if(imgs.length) fileCtx+='\n添付画像: '+imgs.map(function(f){return f.name;}).join(', ')+'\n';
+  }
+
+  // ── 検索 ──
+  // ファイル添付時は検索スキップ（コンテキスト節約）
+  var searchCtx='';
+  if(!files||!files.length){
+    try{
+      var raw=await fetchRealtime(userText);
+      if(raw) searchCtx=filterSearch(raw,userText);
+    }catch(e){}
+  }
+
+  // ── システムプロンプト ──
+  // 文字数指定があるかどうかでプロンプトを分岐
+  var lengthInstruction='';
+  if(lengthSpec&&lengthSpec.min!==null&&lengthSpec.max!==null){
+    var lType=lengthSpec.type;
+    var lMin=lengthSpec.min;
+    var lMax=lengthSpec.max;
+    lengthInstruction=
+'\n【文字数厳守ルール】\n'
++'ユーザーは「'+lengthSpec.raw+'」と指定しました。\n'
++'・出力は必ず'+lMin+'〜'+lMax+lType+'の範囲内に収めてください。\n'
++'・出力前に自分で文字数を数え、範囲外なら書き直してください。\n'
++'・短すぎる場合→具体例・背景・補足・関連知識を追加して文字数を増やす。\n'
++'・長すぎる場合→冗長な表現・繰り返しを削り、要点だけ残す。\n'
++'・「文字数が足りないので追加します」などのメタコメントは絶対に書かない。\n'
++'・フィラー（「〜ですね」「〜と思います」の繰り返し）で水増ししない。中身のある内容のみで文字数を満たす。\n';
+  } else {
+    lengthInstruction=
+'\n## 出力量ルール（厳守）\n'
++'- 回答は必ず**800文字以上**を維持すること（例外なし）。\n'
++'- 上記「回答の深さ・構成」の7要素をすべて含むこと。\n'
++'- 複雑なトピック・分析・比較・技術解説は**1500〜3000文字**。\n'
++'- 「はい」「そうです」だけで終わる短答は**厳禁**。必ず7要素を続けること。\n'
++'- 空虚なフィラー・繰り返しは禁止。すべての文字を実質的な情報・例・考察で埋めること。\n';
+  }
+
+  var sys=
+'あなたはUnified AI（統合AI）です。今日の日付: '+today+'。使用言語: '+L+'。\n'
++'\n## ミッション\n'
++'ユーザーの質問に対して、**ChatGPTのGPT-4oと同等かそれ以上の深さ・網羅性・実用性**で回答する。\n'
++'単なる情報提供ではなく「知識が深い友人・専門家に直接相談した」と感じさせる回答を目指す。\n'
++'\n## 基本姿勢\n'
++'- 「はい」「もちろん」「承知しました」などの冒頭フレーズは使わない。即、本題から入る。\n'
++'- 回答は**断言・主張・推奨を明確に**述べる。「〜かもしれません」「〜とも言えます」だけで濁さない。\n'
++'- ユーザーの口調・文体（敬語/タメ口/技術的/カジュアル）に合わせてトーンを調整する。\n'
++'- 重要なキーワード・概念は**太字**にする。3項目以上の並列は箇条書きにする。\n'
++'- 見出し（##）は長い回答・複数トピックがある場合のみ使う。短い回答に無理に見出しを付けない。\n'
++'\n## 回答の深さ・構成（必ず守ること）\n'
++'回答は必ず以下の要素をすべて含むこと：\n'
++'1. **直接回答**：結論・答えを最初に明確に述べる。\n'
++'2. **仕組み・原理・背景**：なぜそうなのか、どういう理由・メカニズムで成り立つのかを説明する。\n'
++'3. **具体例・実例・ケース**：最低2〜3個の実際のシーン・事例・数字を挙げて説明を肉付けする。\n'
++'4. **深堀り・分析・考察**：表面的な情報に留まらず、背景にある要因・影響・トレードオフ・リスク・本質的な問いを掘り下げる。\n'
++'5. **補足・注意点・よくある誤解**：ユーザーが見落としがちな観点・例外・落とし穴・関連知識を加える。\n'
++'6. **実践的アドバイス・次のアクション**：「では実際にどうすればいいか」を具体的に提示する。\n'
++'7. **まとめ・要点の整理**：最後に1〜3文でポイントを凝縮して締める。\n'
++'\n## 文量ガイドライン\n'
++'- 一般的な質問・説明：**最低800文字**（7要素をすべて含む）\n'
++'- 複雑なトピック・分析・比較・技術解説：**1500〜3000文字**\n'
++'- コード生成：コード＋説明コメント＋使い方の例＋注意点（文字数より「完全性」優先）\n'
++'- 「はい」「〜です」だけで終わる短答は**厳禁**。必ず上記7要素を加える。\n'
++'- フィラー（「〜ですね」の繰り返し・空虚な励まし）は禁止。すべて実質的な情報で埋める。\n'
++'- 途中で「以上です」「参考になれば」などで早期終了しない。締めのまとめまで書き切る。\n'
++'\n## 分析・要約・比較の方針\n'
++'- 情報整理は「結論→理由→具体例→深堀り→補足」の順で構成する。\n'
++'- 要約は単なる短縮ではなく、**本質・重要度・背景を踏まえた構造化要約**にする。\n'
++'- 比較・分析では**表**（Markdown table）を積極的に使い、差異・共通点・推奨を明示する。\n'
++'- 曖昧な質問には「最も可能性が高い解釈で回答し、末尾に確認を促す一言を添える。\n'
++'- 賛否ある話題は双方の立場を公平に説明した上で、最終的な自分の見解・推奨を明示する。\n'
++lengthInstruction
++'\n## コード生成\n'
++'- 動作する**完全なコード**のみ出力。省略（"...省略..."など）は絶対禁止。\n'
++'- コードの後に：①何をするコードか ②主要な処理の解説 ③使い方の具体例 ④注意点・カスタマイズ方法 を必ず付ける。\n'
++(isCodeReq ? '- 出力前に構文を自己チェックし、バグがあれば修正してから出力する。\n' : '')
++(searchCtx
+  ? '\n## 最新情報（Web検索結果 '+today+'）\n'+searchCtx.slice(0,2500)+'\n検索結果を踏まえた上で、上記の回答構成に従って深く回答すること。\n'
+  : '\n## 知識ベース\n学習データは2023年末まで。2024年以降の情報は「学習データ外の可能性あり」と明示しつつ、知っている限り最善の情報を提供する。\n'
+)
++(fileCtx?'\n## 添付ファイル\n'+fileCtx+'\n':'');
+
+  // ── メッセージ配列の構築（正しい順序）──
+  // 今回送るuserの内容（検索結果はシステムプロンプトに含むのでここでは短く）
+  var currentContent=userText+(searchCtx?'\n\n[参考: ウェブ検索で取得した最新情報は上記システムプロンプトを参照]\n':'');
+
+  // histの末尾がuserなら除去（エラー後の再送対策）
+  while(hist.length>0&&hist[hist.length-1].role==='user') hist.pop();
+
+  // ファイル添付時はhist件数を絞ってコンテキスト節約（直近6件のみ）
+  var histForApi=hist;
+  if(files&&files.length&&hist.length>6) histForApi=hist.slice(-6);
+
+  // ── 履歴圧縮送信 ──
+  // 直近4件（2往復）はフル送信、それ以前は要点を500文字に圧縮してトークン節約
+  var FULL_RECENT=4;
+  var msgs=histForApi.map(function(m,i,arr){
+    var isRecent=(i>=arr.length-FULL_RECENT);
+    var content=m.content||'';
+    if(!isRecent&&m.role==='assistant'&&content.length>500){
+      // AI応答の古いものは先頭500文字に圧縮
+      content=content.slice(0,500)+'…(略)';
+    }
+    if(!isRecent&&m.role==='user'&&content.length>300){
+      content=content.slice(0,300)+'…';
+    }
+    return {role:m.role,content:content};
+  });
+  msgs.push({role:'user',content:currentContent});
+
+  // トークン数チェック＆自動トリム（callGroq/callClaude内でも行うが事前にも調整）
+  var sysTokens=estimateTokens(sys);
+  var maxInput=ON_CLAUDE?180000:90000;
+  msgs=trimMessagesToFit(msgs, maxInput-sysTokens);
+
+  // histにも今回のuserを追加
+  hist.push({role:'user',content:currentContent,display:userText});
+  if(hist.length>60) hist=hist.slice(-60);
+
+  try{
+    var ans=await callLLM(sys,msgs);
+
+    // ── 事後チェック① デフォルト最低800文字 ──
+    var DEFAULT_MIN=800;
+    if(!lengthSpec && ans.length<DEFAULT_MIN){
+      console.warn('[LEN] Too short: '+ans.length+'ch < '+DEFAULT_MIN+'ch. Retrying...');
+      var shortage=DEFAULT_MIN-ans.length;
+      var r1msgs=msgs.concat([
+        {role:'assistant',content:ans},
+        {role:'user',content:
+          '回答が短すぎます（現在'+ans.length+'文字、最低'+DEFAULT_MIN+'文字必要）。\n'
+          +'あと約'+shortage+'文字分、以下の要素をすべて追加して回答全体を書き直してください：\n'
+          +'・【仕組み・原理・背景】なぜそうなのか、メカニズムを詳しく説明する\n'
+          +'・【具体例・実例】最低2〜3個の実際のシーン・事例・数字を挙げる\n'
+          +'・【深堀り・分析・考察】背景にある要因・影響・トレードオフ・本質的な問いを掘り下げる\n'
+          +'・【補足・注意点・よくある誤解】見落としがちな観点・例外・落とし穴・関連知識を加える\n'
+          +'・【実践的アドバイス】では実際にどうすればいいかを具体的に提示する\n'
+          +'・【まとめ】最後に要点を1〜3文で締める\n'
+          +'「文字数を増やします」などのメタコメントは絶対に書かないこと。内容のみを書くこと。'}
+      ]);
+      try{
+        var ans1r=await callLLM(sys,r1msgs);
+        if(ans1r&&ans1r.length>ans.length) ans=ans1r;
+        console.warn('[LEN] After retry: '+ans.length+'ch');
+      }catch(_){}
+    }
+
+    // ── 事後チェック② 文字数指定がある場合は最大3回リトライして範囲内に収める ──
+    if(lengthSpec&&lengthSpec.min!==null&&lengthSpec.max!==null){
+      var lMin2=lengthSpec.min, lMax2=lengthSpec.max, lType2=lengthSpec.type;
+      for(var lRetry=0;lRetry<3;lRetry++){
+        var curLen=countLength(ans,lType2);
+        if(curLen>=lMin2&&curLen<=lMax2){
+          console.log('[LEN] In range: '+curLen+' '+lType2+' (try '+lRetry+')');
+          break;
+        }
+        var isTooShort=curLen<lMin2;
+        var diff=isTooShort?(lMin2-curLen):(curLen-lMax2);
+        console.warn('[LEN] Out of range: got '+curLen+', need '+lMin2+'-'+lMax2+' '+lType2+'. Retry '+(lRetry+1)+'/3');
+        var fixMsg=isTooShort
+          ? '現在の回答は'+curLen+lType2+'です。指定は'+lMin2+'〜'+lMax2+lType2+'なので、約'+diff+lType2+'足りません。\n'
+            +'以下の方法で回答全体を書き直し、'+lMin2+'〜'+lMax2+lType2+'の範囲内にしてください：\n'
+            +'・具体的な例・ケーススタディを追加する\n'
+            +'・理由・背景・仕組みをより詳しく説明する\n'
+            +'・関連する補足情報・注意点を加える\n'
+            +'「文字数のため追加します」などのメタコメントは書かないこと。内容だけ書く。'
+          : '現在の回答は'+curLen+lType2+'です。指定は'+lMin2+'〜'+lMax2+lType2+'なので、約'+diff+lType2+'多すぎます。\n'
+            +'以下の方法で回答全体を書き直し、'+lMin2+'〜'+lMax2+lType2+'の範囲内にしてください：\n'
+            +'・冗長な言い回し・繰り返しを削る\n'
+            +'・重要度の低い補足を省略する\n'
+            +'・要点を凝縮して同じ内容をより短く表現する\n'
+            +'「短くしました」などのメタコメントは書かないこと。内容だけ書く。';
+        var rMsgs=msgs.concat([
+          {role:'assistant',content:ans},
+          {role:'user',content:fixMsg}
+        ]);
+        try{
+          var ansR=await callLLM(sys,rMsgs);
+          if(ansR&&ansR.trim()){
+            var rLen=countLength(ansR,lType2);
+            // 範囲内に入っていれば無条件採用、入っていなくても「より近い方」を採用
+            var prevDiff=Math.min(Math.abs(curLen-lMin2),Math.abs(curLen-lMax2));
+            var newDiff=Math.min(Math.abs(rLen-lMin2),Math.abs(rLen-lMax2));
+            if(rLen>=lMin2&&rLen<=lMax2){ ans=ansR; break; }
+            if(newDiff<prevDiff) ans=ansR;
+          }
+        }catch(_){ break; }
+      }
+    }
+
+    hist.push({role:'assistant',content:ans,display:ans});
+    if(hist.length>60) hist=hist.slice(-60);
+    histSave();
+    // キャッシュ保存（ファイル添付なしのみ）
+    // API応答は1日TTL（Groq/Gemini共通）
+    if(!files||!files.length){
+      var inConvNow = hist.filter(function(m){return m.role==='user';}).length > 1;
+      await cSet(userText, ans, inConvNow, needsSearch(userText), isCodeReq);
+    }
+    return ans;
+  }catch(e){
+    if(hist.length>0&&hist[hist.length-1].role==='user') hist.pop();
+    throw e;
+  }
+}
+
+async function callLLM(sys, messages){
+  // Claude.ai環境では Claude API を使用
+  if(ON_CLAUDE) return callClaude(sys,messages);
+
+  // 制限が両方解けていたらサイクルをリセット
+  _apiState.tryRestoreCycle();
+
+  // 次に使うAPIを決定
+  var apiSlot=_apiState.nextApi();
+
+  // 両方制限中
+  if(!apiSlot){
+    var gReset=_apiState.resetTimeStr('groq');
+    var mReset=_apiState.resetTimeStr('gemini');
+    var earliest=null;
+    if(gReset&&mReset){ earliest=gReset<mReset?gReset:mReset; }
+    else{ earliest=gReset||mReset; }
+    if(_currentAiEl) showBothLimitNotice(_currentAiEl, gReset, mReset);
+    throw new Error('__BOTH_LIMITED__');
+  }
+
+  var isFallback=apiSlot.endsWith('_fallback');
+  var api=isFallback?apiSlot.replace('_fallback',''):apiSlot;
+
+  // ローディング表示
+  if(_currentAiEl) showApiStatus(_currentAiEl, api);
+
+  // 実行
+  try{
+    var result;
+    if(api==='groq'){
+      result=await callGroq(sys,messages,_APIKEYS.groq());
+    } else {
+      result=await callGemini(sys,messages);
+    }
+    _apiState.countUp(api, isFallback);
+    console.log('[LLM] '+api+(isFallback?' (fallback)':' (cycle)')
+      +' | groq:'+_apiState.getState().groqCount+'/50'
+      +' gemini:'+_apiState.getState().geminiCount+'/100');
+    return result;
+
+  }catch(e){
+    var limitKey=api==='groq'?'GROQ_LIMIT':'GEMINI_LIMIT';
+    if(e.message===limitKey){
+      // 制限発生 → 記録して相手APIにフォールバック
+      _apiState.setLimit(api);
+      var resetStr=_apiState.resetTimeStr(api);
+      var other=api==='groq'?'gemini':'groq';
+      var otherOk=!_apiState.isLimited(other);
+
+      if(otherOk){
+        // 相手が使える → 切替通知を出して続行
+        if(_currentAiEl) showSwitchNotice(_currentAiEl, api, other, resetStr);
+        await new Promise(function(r){setTimeout(r,1800);});
+        if(_currentAiEl) showApiStatus(_currentAiEl, other);
+        var result2;
+        if(other==='groq'){
+          result2=await callGroq(sys,messages,_APIKEYS.groq());
+        } else {
+          result2=await callGemini(sys,messages);
+        }
+        // fallbackとして実行（サイクルカウントは進めない）
+        console.log('[LLM] Switched to '+other+' (limit fallback)');
+        return result2;
+      } else {
+        // 両方制限
+        var gR=_apiState.resetTimeStr('groq');
+        var mR=_apiState.resetTimeStr('gemini');
+        if(_currentAiEl) showBothLimitNotice(_currentAiEl, gR, mR);
+        throw new Error('__BOTH_LIMITED__');
+      }
+    }
+    throw e;
+  }
+}
+
+// API切替通知（制限発生時）
+function showSwitchNotice(el, fromApi, toApi, resetTimeStr){
+  if(_countdownTimer){ clearInterval(_countdownTimer); _countdownTimer=null; }
+  var fromLabel=fromApi==='groq'?'Groq':'Gemini';
+  var toLabel=toApi==='groq'?'Groq':'Gemini 2.0 Flash';
+  var resetPart=resetTimeStr?'<div style="font-size:12px;color:var(--fg2);margin-top:4px;">'+fromLabel+'の制限解除見込み: <strong style="color:var(--fg)">本日 '+resetTimeStr+' 頃</strong></div>':'';
+  el.innerHTML=
+    '<div style="background:rgba(255,204,68,0.07);border:1px solid rgba(255,204,68,0.25);border-radius:10px;padding:14px 18px;">'
+    +'<div style="font-family:var(--mono);font-size:10px;color:var(--llama);letter-spacing:.08em;margin-bottom:6px;">⚡ '+fromLabel+'の利用上限に達しました</div>'
+    +'<div style="font-size:14px;font-weight:700;color:var(--fg);margin-bottom:4px;">'+toLabel+' に切り替えます</div>'
+    +resetPart
+    +'</div>';
+}
+
+// 両方制限通知
+function showBothLimitNotice(el, groqReset, geminiReset){
+  if(_countdownTimer){ clearInterval(_countdownTimer); _countdownTimer=null; }
+  var earliest=null;
+  if(groqReset&&geminiReset){ earliest=groqReset<geminiReset?groqReset:geminiReset; }
+  else{ earliest=groqReset||geminiReset||'不明'; }
+  el.innerHTML=
+    '<div style="background:rgba(255,95,95,0.08);border:1px solid rgba(255,95,95,0.3);border-radius:10px;padding:16px 18px;">'
+    +'<div style="font-family:var(--mono);font-size:10px;color:var(--ds);letter-spacing:.08em;margin-bottom:10px;">🚫 Groq・Gemini 両方の利用上限に達しました</div>'
+    +'<div style="font-size:22px;font-weight:700;color:var(--fg);font-family:var(--mono);margin-bottom:8px;">本日 '+earliest+' 頃に解除見込み</div>'
+    +(groqReset?'<div style="font-size:11px;color:var(--fg2);margin-bottom:2px;">Groq 解除見込み: '+groqReset+'</div>':'')
+    +(geminiReset?'<div style="font-size:11px;color:var(--fg2);margin-bottom:2px;">Gemini 解除見込み: '+geminiReset+'</div>':'')
+    +'<div style="font-size:12px;color:var(--fg2);margin-top:8px;">解除後は自動的にサイクルに復帰します。</div>'
+    +'</div>';
+}
+
+// 使用API表示バッジ
+function showApiStatus(el, api){
+  var color=api==='gemini'?'#4285F4':'var(--llama)';
+  var label=api==='gemini'?'Gemini 2.0 Flash':'Groq';
+  var st=_apiState.getState();
+  var countInfo=api==='groq'?st.groqCount+'/50':st.geminiCount+'/100';
+  el.innerHTML='<div class="search-indicator"><div class="search-spinner"></div><span>生成中… <span style="color:'+color+';font-family:var(--mono);font-size:10px;">via '+label+' ('+countInfo+')</span></span></div>';
+}
+
+
 
 
 /* ═══ Markdown→HTML ═══ */
@@ -1387,7 +2975,7 @@ function typewrite(el,text,onDone){
 }
 
 /* ═══ UI ═══ */
-let busy=false,msgN=0,lastText='';
+let busy=false,msgN=0,lastText='',_currentAiEl=null;
 const area=document.getElementById('chat-area');
 const inp=document.getElementById('user-input');
 const sBtn=document.getElementById('send-btn');
@@ -1444,7 +3032,21 @@ function addUser(text, files){
   const bubble=document.createElement('div');
   bubble.className='user-bubble';
   bubble.id=msgId;
-  bubble.innerHTML=fileHtml+esc(text);
+  // 意図的な改行（\n）は <br> に変換して保持
+  // 意図的改行がない段落は25文字ごとに折り返す
+  function formatUserText(t){
+    return t.split('\n').map(function(line){
+      if(line.trim()==='') return '<br>';
+      // 25文字ごとにスペースを挿入して折り返しヒントを与える
+      var out='';
+      for(var i=0;i<line.length;i+=25){
+        if(i>0) out+='<wbr>';
+        out+=esc(line.slice(i,i+25));
+      }
+      return out;
+    }).join('<br>');
+  }
+  bubble.innerHTML=fileHtml+formatUserText(text);
 
   msgWrap.appendChild(actions);
   msgWrap.appendChild(bubble);
@@ -1461,49 +3063,65 @@ function copyUserMsg(btn, id){
 }
 
 
-function copyUserMsg(btn,id){
-  const el=document.getElementById(id);
-  if(!el)return;
-  doCopy(el.innerText,btn);
-}
-
 function editUserMsg(bubbleId){
+  if(busy)return; // 生成中は編集不可
   const el=document.getElementById(bubbleId);
   if(!el)return;
   const originalText=el.innerText.trim();
 
-  // 既存の編集パネルがあれば閉じる
-  const existing=document.getElementById('edit-panel');
-  if(existing)existing.remove();
+  // 既存の編集パネルがあれば閉じてwrapを再表示
+  const existingPanel=document.getElementById('edit-panel');
+  if(existingPanel){
+    const hiddenWrap=document.querySelector('.msg-wrap[data-edit-hidden="1"]');
+    if(hiddenWrap) hiddenWrap.style.display='';
+    existingPanel.remove();
+  }
 
-  // 編集パネルを作成（送信したメッセージの直下に挿入）
   const wrap=el.closest('.msg-wrap');
+  if(!wrap)return;
+
+  // 元のユーザーメッセージwrapを非表示
+  wrap.style.display='none';
+  wrap.dataset.editHidden='1';
+
+  // 編集パネルを wrap の位置（非表示の次）に挿入
   const panel=document.createElement('div');
   panel.id='edit-panel';
-  panel.style.cssText='max-width:780px;margin:0 auto;padding:0 24px 16px;';
+  panel.dataset.targetBubble=bubbleId;
+  panel.style.cssText='max-width:780px;margin:0 auto;padding:12px 24px 16px;';
   panel.innerHTML=
-    '<div style="background:var(--surface);border:1px solid var(--grok);border-radius:10px;padding:12px 14px;">'
-    +'<div style="font-family:var(--mono);font-size:9px;color:var(--grok);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">✏ メッセージを編集</div>'
-    +'<textarea id="edit-ta" style="width:100%;background:none;border:none;outline:none;color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.7;resize:none;min-height:60px;max-height:200px;overflow-y:auto;">'+originalText+'</textarea>'
+    '<div style="background:var(--surface);border:1px solid var(--grok);border-radius:10px;padding:14px 16px;">'
+    +'<div style="font-family:var(--mono);font-size:9px;color:var(--grok);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;">✏ メッセージを編集</div>'
+    +'<textarea id="edit-ta" style="width:100%;background:none;border:none;outline:none;color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.7;resize:none;min-height:60px;max-height:240px;overflow-y:auto;"></textarea>'
     +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">'
-    +'<button onclick="cancelEdit()" style="padding:5px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--fg2);font-family:var(--mono);font-size:11px;cursor:pointer;">キャンセル</button>'
-    +'<button onclick="submitEdit('+JSON.stringify(bubbleId)+')" style="padding:5px 16px;background:var(--grok);border:none;border-radius:6px;color:#fff;font-family:var(--mono);font-size:11px;cursor:pointer;font-weight:700;">再送信 →</button>'
+    +'<button id="edit-cancel-btn" style="padding:5px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--fg2);font-family:var(--mono);font-size:11px;cursor:pointer;">キャンセル</button>'
+    +'<button id="edit-submit-btn" style="padding:5px 16px;background:var(--grok);border:none;border-radius:6px;color:#fff;font-family:var(--mono);font-size:11px;cursor:pointer;font-weight:700;">再送信 →</button>'
     +'</div>'
     +'</div>';
 
-  // wrap の後に挿入
-  if(wrap&&wrap.parentNode){
-    wrap.parentNode.insertBefore(panel,wrap.nextSibling);
-  }
+  // wrapの直後（非表示のwrapの次のsibling位置）に挿入
+  wrap.parentNode.insertBefore(panel, wrap.nextSibling);
 
-  // テキストエリアの自動リサイズ
+  // ボタンにイベントをJS直接バインド（onclick属性を使わない）
+  document.getElementById('edit-cancel-btn').addEventListener('click', cancelEdit);
+  document.getElementById('edit-submit-btn').addEventListener('click', function(){
+    submitEdit(bubbleId);
+  });
+
+  // テキストエリアに値をセット＆自動リサイズ
   const ta=document.getElementById('edit-ta');
   if(ta){
+    ta.value=originalText;
     ta.style.height='auto';
-    ta.style.height=Math.min(ta.scrollHeight,200)+'px';
+    ta.style.height=Math.min(ta.scrollHeight,240)+'px';
     ta.addEventListener('input',function(){
       this.style.height='auto';
-      this.style.height=Math.min(this.scrollHeight,200)+'px';
+      this.style.height=Math.min(this.scrollHeight,240)+'px';
+    });
+    // Ctrl+Enter / Cmd+Enter で再送信
+    ta.addEventListener('keydown',function(e){
+      if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();submitEdit(bubbleId);}
+      if(e.key==='Escape'){e.preventDefault();cancelEdit();}
     });
     ta.focus();
     ta.setSelectionRange(ta.value.length,ta.value.length);
@@ -1512,64 +3130,58 @@ function editUserMsg(bubbleId){
 }
 
 function cancelEdit(){
-  const p=document.getElementById('edit-panel');
-  if(p)p.remove();
+  const panel=document.getElementById('edit-panel');
+  if(!panel)return;
+  // 非表示にしていたwrapを元に戻す
+  const hiddenWrap=document.querySelector('.msg-wrap[data-edit-hidden="1"]');
+  if(hiddenWrap){
+    hiddenWrap.style.display='';
+    delete hiddenWrap.dataset.editHidden;
+  }
+  panel.remove();
 }
 
-function submitEdit(bubbleId){
+async function submitEdit(bubbleId){
   const ta=document.getElementById('edit-ta');
   if(!ta)return;
   const newText=ta.value.trim();
   if(!newText)return;
 
-  // 編集パネルを閉じる
+  // ボタンを即座に無効化して二重送信防止
+  const submitBtn=document.getElementById('edit-submit-btn');
+  const cancelBtn=document.getElementById('edit-cancel-btn');
+  if(submitBtn){submitBtn.disabled=true;submitBtn.textContent='送信中…';}
+  if(cancelBtn){cancelBtn.disabled=true;}
+
   const panel=document.getElementById('edit-panel');
-  const wrap=document.getElementById(bubbleId)?.closest('.msg-wrap');
+  // 非表示のユーザーwrap
+  const hiddenWrap=document.querySelector('.msg-wrap[data-edit-hidden="1"]');
+  // 直後にあるAI応答wrap（panelの次のsibling）
+  const aiWrap=panel ? panel.nextElementSibling : null;
 
-  // 対応するAI返答を削除
-  const nextWrap=wrap?wrap.nextElementSibling:null;
-  if(panel)panel.remove();
-  if(nextWrap&&nextWrap.classList.contains('msg-ai'))nextWrap.remove();
-
-  // 元のユーザーメッセージを削除
-  if(wrap)wrap.remove();
-
-  // 履歴から最後のuser+assistantを削除
-  if(hist.length>=2&&hist[hist.length-1].role==='assistant'){
+  // 履歴から該当のuser+assistantセットを削除
+  if(hist.length>=2 && hist[hist.length-1].role==='assistant'){
     hist.splice(-2,2);
-  } else if(hist.length>=1&&hist[hist.length-1].role==='user'){
+  } else if(hist.length>=1 && hist[hist.length-1].role==='user'){
     hist.splice(-1,1);
   }
 
-  // 新しいテキストで再送信
-  run(newText);
+  // DOM削除（後ろから）
+  if(aiWrap && aiWrap.classList.contains('msg-ai')) aiWrap.remove();
+  if(panel) panel.remove();
+  if(hiddenWrap) hiddenWrap.remove();
+
+  // busy解除
+  busy=false;
+  _currentAiEl=null;
+  syncBtn();
+
+  // DOMが確実に更新されてから実行
+  await new Promise(r=>setTimeout(r,30));
+  // addUser込みの通常runで新しいメッセージを追加
+  await run(newText);
 }
 
-function copyUserMsg(id){
-  const el=document.getElementById(id);
-  if(!el)return;
-  const btn=el.previousElementSibling?.querySelector('[title="コピー"]');
-  doCopy(el.innerText,btn||{innerHTML:'',classList:{add:function(){},remove:function(){}}});
-}
-
-function editUserMsg(bubbleId){
-  const el=document.getElementById(bubbleId);
-  if(!el)return;
-  const text=el.innerText;
-  inp.value=text;
-  resize(inp);syncBtn();inp.focus();
-  // 対応するAI返答を削除して再送信しやすくする
-  const wrap=el.closest('.msg-wrap');
-  const next=wrap?.nextElementSibling;
-  if(next&&next.classList.contains('msg-wrap')&&next.classList.contains('msg-ai')){
-    next.remove();
-    // 履歴からも除去
-    if(hist.length>=2&&hist[hist.length-1].role==='assistant'&&hist[hist.length-2].role==='user'){
-      hist.splice(-2,2);
-    }
-  }
-  wrap?.remove();
-}
 function addAi(){
   const id=++msgN;
   const d=document.createElement('div');d.className='msg-wrap msg-ai';
@@ -1582,9 +3194,56 @@ function addAi(){
   area.appendChild(d);scrollD(true);
   return document.getElementById('c'+id);
 }
-function showLoad(el){el.innerHTML='<div class="search-indicator"><div class="search-spinner"></div><span>生成中…</span></div>';}
+function showLoad(el,msg){el.innerHTML='<div class="search-indicator"><div class="search-spinner"></div><span>'+(msg||'生成中…')+'</span></div>';}
+
+// カウントダウン付き待機表示（レート制限時に使用）
+var _countdownTimer=null;
+function showRateLimit(el, waitMs, retryNum, totalRetry){
+  if(_countdownTimer) clearInterval(_countdownTimer);
+  var totalSec=Math.ceil(waitMs/1000);
+  var remaining=totalSec;
+  function render(){
+    var m=Math.floor(remaining/60), s=remaining%60;
+    var timeStr=m>0 ? m+'分'+s+'秒' : s+'秒';
+    var pct=Math.round((1-(remaining/totalSec))*100);
+    el.innerHTML=
+      '<div style="background:rgba(255,95,95,0.07);border:1px solid rgba(255,95,95,0.2);border-radius:10px;padding:14px 18px;">'
+      +'<div style="font-family:var(--mono);font-size:10px;color:var(--ds);letter-spacing:.08em;margin-bottom:8px;">⏳ 使用制限に達しました — 自動リトライ中 ('+retryNum+'/'+totalRetry+')</div>'
+      +'<div style="font-size:22px;font-weight:700;color:var(--fg);font-family:var(--mono);margin-bottom:6px;">'+timeStr+'</div>'
+      +'<div style="font-size:11px;color:var(--fg2);margin-bottom:10px;">後に自動で再送します。このままお待ちください。</div>'
+      +'<div style="background:var(--surface2);border-radius:4px;height:4px;overflow:hidden;">'
+      +'<div style="background:var(--ds);height:4px;width:'+pct+'%;transition:width 0.9s linear;border-radius:4px;"></div>'
+      +'</div>'
+      +'</div>';
+  }
+  render();
+  _countdownTimer=setInterval(function(){
+    remaining--;
+    if(remaining<=0){ clearInterval(_countdownTimer); _countdownTimer=null; }
+    else render();
+  },1000);
+}
+function clearRateLimit(el){
+  if(_countdownTimer){ clearInterval(_countdownTimer); _countdownTimer=null; }
+  el.innerHTML='';
+}
+
 function showErr(el,e){
+  if(_countdownTimer){ clearInterval(_countdownTimer); _countdownTimer=null; }
   const msg=(e&&e.message)||String(e);
+  // 両方制限中の場合は通知UIが既に表示されているので再試行ボタンだけ追加
+  if(msg==='__BOTH_LIMITED__'){
+    // 既存の通知UIにボタンを追加
+    var existing=el.querySelector('div');
+    if(existing){
+      var btn=document.createElement('button');
+      btn.textContent='↺ 再試行';
+      btn.setAttribute('onclick','retry()');
+      btn.style.cssText='margin-top:12px;display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:5px 14px;color:var(--fg2);font-family:var(--mono);font-size:11px;cursor:pointer';
+      existing.appendChild(btn);
+    }
+    return;
+  }
   el.innerHTML='<div class="error-msg">⚠ '+esc(msg)
     +'<br><button onclick="retry()" style="margin-top:8px;display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:5px 14px;color:var(--fg2);font-size:11px;cursor:pointer">↺ 再試行</button>'
     +'</div>';
@@ -1602,13 +3261,44 @@ async function run(text){
   attachedFiles=[];updateAttachPreview();
   addUser(text, files);
   const el=addAi();
+  _currentAiEl=el;
   try{
-    // ファイルなしの場合のみキャッシュ使用
+    // ── キャッシュチェック（ファイル添付なしのみ）──
+    // 会話中でも「同じ文脈での同じ質問」はキャッシュから返す
+    var inConv = hist.length > 0;
+    var isSearch = needsSearch(text);
+    var isCode = detectCodeRequest(text);
+    var cached = null;
+
     if(!files.length){
-      const cached=await cGet(text);
-      if(cached){await new Promise(r=>typewrite(el,cached,r));await saveCurrentChat();return;}
+      cached = await cGet(text, inConv);
     }
-    showLoad(el);
+
+    if(cached){
+      // キャッシュヒット → APIを呼ばずに即返答
+      hist.push({role:'user',content:text,display:text});
+      hist.push({role:'assistant',content:cached,display:cached});
+      if(hist.length>60) hist=hist.slice(-60);
+      histSave();
+      await new Promise(r=>typewrite(el,cached,r));
+      await saveCurrentChat();
+      return;
+    }
+
+    var loadMsg='生成中…';
+    if(isSearch&&!files.length){
+      loadMsg=needsNews(text)?'📰 ニュース検索中…':needsYouTube(text)?'📺 YouTube検索中…':'🔍 最新情報を検索中…';
+    }
+    // サイクルに従ったAPIを表示（制限状態を反映）
+    if(!ON_CLAUDE && typeof showApiStatus==='function'){
+      _apiState.tryRestoreCycle();
+      var _previewSlot=_apiState.nextApi();
+      var _previewApi=_previewSlot?_previewSlot.replace('_fallback',''):null;
+      if(_previewApi){ showApiStatus(el,_previewApi); }
+      else { showLoad(el,loadMsg); }
+    } else {
+      showLoad(el,loadMsg);
+    }
     const ans=await ask(text, files);
     el.innerHTML='';
     await new Promise(r=>typewrite(el,ans,r));
@@ -1616,7 +3306,7 @@ async function run(text){
   }catch(e){
     el.innerHTML='';showErr(el,e);
   }finally{
-    busy=false;syncBtn();
+    busy=false;_currentAiEl=null;syncBtn();
   }
 }
 async function send(){
@@ -1628,45 +3318,50 @@ async function send(){
 }
 
 /* ═══ 新規チャット ═══ */
+async function newChatFromSidebar(){
+  await newChat();
+  closeSidebar();
+}
+
+async function clearAllChats(){
+  if(!confirm('チャット履歴を全て削除しますか？')) return;
+  chatList=[];
+  activeChatId=null;
+  hist=[];
+  stSet(SK.CHATS,'[]');
+  stSet(SK.HIST,'[]');
+  stSet(SK.ACTIVE,'');
+  area.innerHTML='';
+  msgN=0;
+  attachedFiles=[];
+  updateAttachPreview();
+  buildWelcomeUI();
+  renderChatList();
+  startApiPanelTimer();
+}
+
+
 async function newChat(){
   if(busy)return;
   if(hist.length) await saveCurrentChat();
   activeChatId=null;
   hist=[];
+  conversationSummary='';
   stSet(SK.ACTIVE,'');
   attachedFiles=[];updateAttachPreview();
   area.innerHTML='';msgN=0;
   const w=buildWelcome();area.appendChild(w);
   inp.value='';resize(inp);syncBtn();
+  startApiPanelTimer();
 }
 
-async function _oldNewChat_unused(){
-  if(busy)return;
-  const w=document.createElement('div');w.id='welcome';
-  w.innerHTML='<div class="welcome-logo"></div><div class="welcome-title">_UNUSED_'
-    +'<p class="welcome-sub white-text">Grok-1・DeepSeek-V3・Llama 4・Mistral・Qwen 3.5 の各分野における長所を統合し、<br>最新情報をウェブ検索して最も正確な回答を提供します。使用言語に合わせて出力します。<br>※このAIは各サービスとは関係ありません</p>'
-    +'<div class="strategy-grid">'
-    +'<div class="strat-card"><div class="strat-name"><span class="strat-dot" style="background:var(--grok)"></span>Grok-1</div><div class="strat-desc">多角的な視点で質問を分析</div></div>'
-    +'<div class="strat-card"><div class="strat-name"><span class="strat-dot" style="background:var(--ds)"></span>DeepSeek</div><div class="strat-desc">段階的推論で深く考える</div></div>'
-    +'<div class="strat-card"><div class="strat-name"><span class="strat-dot" style="background:var(--llama)"></span>Llama 4</div><div class="strat-desc">文脈を理解して本質を抽出</div></div>'
-    +'<div class="strat-card"><div class="strat-name"><span class="strat-dot" style="background:var(--mistral)"></span>Mistral</div><div class="strat-desc">具体例を交えてわかりやすく</div></div>'
-    +'<div class="strat-card" style="grid-column:span 2"><div class="strat-name"><span class="strat-dot" style="background:var(--qwen)"></span>Qwen</div><div class="strat-desc">自然な日本語で表現</div></div>'
-    +'</div>'
-    +'<div class="example-prompts">'
-    +'<div class="ex-prompt" onclick="setPrompt(this)">忙しいときに簡単に作れる料理は?</div>'
-    +'<div class="ex-prompt" onclick="setPrompt(this)">今流行りの動画は?</div>'
-    +'<div class="ex-prompt" onclick="setPrompt(this)">最新のChatGPT料金は？</div>'
-    +'<div class="ex-prompt" onclick="setPrompt(this)">コスパのいい百均のアイテムは?</div>'
-    +'</div>';
-  area.appendChild(w);inp.value='';resize(inp);syncBtn();
-}
 
 /* ═══ 履歴復元 ═══ */
 function restoreUI(){
   if(!hist.length)return;
   document.getElementById('welcome')?.remove();
   for(const m of hist){
-    if(m.role==='user'){addUser(m.content);}
+    if(m.role==='user'){addUser(m.display||m.content,[]);}
     else{
       const el=addAi();el.innerHTML=md(m.content);addCopyBtns(el);
       const row=document.getElementById(el.id.replace(/^c/,'cr'));
@@ -1691,6 +3386,7 @@ async function init(){
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
   sBtn.onclick=send;
   syncBtn();
+  startApiPanelTimer();
 }
 document.addEventListener('DOMContentLoaded',init);
 document.addEventListener('visibilitychange',async()=>{
